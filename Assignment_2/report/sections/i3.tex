@@ -1,0 +1,173 @@
+% ============================================================================================
+\section{I3: Horizon and Ridgeline Plots (Owner: Shrey Modi, BT2024125)}
+\label{sec:i3}
+Both techniques are implemented by hand in Matplotlib (\fpath{infovis/i3_horizon_ridgeline/run.py}); no horizon or ridgeline
+library is used.
+
+\subsection{Horizon plot construction}
+Horizon graphs~\cite{saito2005,heer2009} fold a time series into a compact band:
+\begin{enumerate}
+\item centre the series on a baseline $b$ (the row's mean or median): $d_t=x_t-b$;
+\item choose $N$ bands of height $h=\max|d|/N$, shared by all rows of a figure so that rows are comparable;
+\item slice the positive part into bands $p_t^{(k)}=\mathrm{clip}(d_t-kh,0,h)$ and the negative part into
+  $n_t^{(k)}=\mathrm{clip}(-d_t-kh,0,h)$, for $k=0..N{-}1$;
+\item \emph{fold} the negative bands upward onto the same $[0,h]$ strip and overlay all bands, drawing band $k$ in the
+  $k$-th saturation of a diverging palette (reds above the baseline, blues below; RdBu).
+\end{enumerate}
+Fig.~\ref{fig:35} shows each step on the monthly ``Q\&A and advice'' series and compares $N=1,2,3,4,6$.
+
+\begin{algorithm}[!t]
+\caption{Horizon band folding for one row}
+\label{alg:horizon}
+\begin{algorithmic}[1]
+\REQUIRE series $x_{1..T}$, baseline $b$, band height $h$, bands $N$, palettes $C^+_{1..N}$, $C^-_{1..N}$
+\STATE $d_t\leftarrow x_t-b$
+\FOR{$k=0$ \TO $N-1$}
+  \STATE $p_t\leftarrow\min(\max(d_t-kh,0),h)$; \ fill area $[0,p_t]$ with $C^+_{k+1}$
+  \STATE $n_t\leftarrow\min(\max(-d_t-kh,0),h)$; \ fill area $[0,n_t]$ with $C^-_{k+1}$
+\ENDFOR
+\STATE set $y$-limits to $[0,h]$ \COMMENT{values beyond $Nh$ saturate in the darkest band}
+\end{algorithmic}
+\end{algorithm}
+
+\figfull{Fig_35_horizon_construction.png}{Horizon construction for ``Q\&A and advice'' monthly top-post counts. (a) Raw
+series and mean baseline; (b) deviation split into 3 bands; (c) negative bands mirrored up and all bands collapsed onto
+$[0,h]$; (d--h) the same series with $N=1,2,3,4,6$ bands at the same row height; (i) rationale for the band count.}{fig:35}
+
+\textbf{Band count (Fig.~\ref{fig:35}d--h).} With $N=1$ the row is a two-colour area chart squeezed to one band: the
+2019--20 surge flattens and small dips vanish. With $N=2$--3, each band covers a third or half of the range, so the
+peak of September~2020 (238 posts against a mean of 72.7) reads as dark red and the 2023--24 deficit as mid blue. With
+$N\ge4$ the vertical resolution grows, but four or more shades of one hue are hard to tell apart, and Heer et al.\ found that
+estimation accuracy drops as the number of layers increases~\cite{heer2009}. We use $N=3$ throughout.
+
+\subsection{Variation 1: monthly top posts per topic}
+\figfull{Fig_36_horizon_topics_monthly.png}{Horizon plot of monthly all-time-top posts for the eight topic categories, Jan
+2016--Aug 2024 (104 months), baseline = row mean, $h=55.1$ posts/month, $N=3$. Dotted lines: Mar~2020 (COVID-19 lockdowns)
+and Jun~2023 (Reddit API protest).}{fig:36}
+
+\textbf{Inferences.}
+(1) Every topic follows the same skeleton: blue (below mean) in 2016, red (above mean) between about 2017 and early 2021, and
+blue again from mid-2021. This is the \emph{survivorship} structure of an all-time-top corpus, not a change in Reddit
+activity. Older posts were made when communities were smaller; the newest have had less time to collect votes.
+(2) The \emph{timing} of the red phase differs by topic. Entertainment and media peaks earliest (dark red in
+2017--2018; its top month is March~2018 with 185 posts). Creative and lifestyle peaks in early 2019 (113 posts in
+January~2019). The discussion topics peak during the pandemic: Q\&A and advice reaches the darkest band in mid-2020 (238
+posts in September~2020), News, science and tech has repeated dark peaks through 2020 to January~2021 (224 posts; the timing coincides
+with the US election period, though the data alone cannot show the cause), and Memes, Photos and Text humour all peak in
+July--August~2020.
+(3) The March~2020 line marks the start of the strongest red period for Q\&A, Memes and Photos. That is consistent with
+higher time spent on Reddit during lockdowns producing more posts that later counted as all-time tops.
+(4) After the June~2023 API-protest line, Entertainment, News and Photos drop into the mid-blue band. Their recent output is
+well below their own means, while Creative and lifestyle stays near its mean. The protest and blackout coincide with, but
+cannot alone explain, the decline, because survivorship also penalises recent months.
+(5) News has a short red spike in early 2022 that no other topic has (February--March~2022). Its timing matches the start of
+the war in Ukraine, a plausible but untested explanation.
+The horizon makes this visible because each row is judged against its own baseline.
+
+\subsection{Line chart vs.\ horizon: vertical space efficiency}
+\figfull{Fig_37_line_vs_horizon.png}{The same eight monthly series in equal vertical space: (a) overlapping line chart;
+(b) small-multiple line charts on a shared 0--238 scale; (c) horizon rows with $h=55.1$ posts and 3 bands.}{fig:37}
+
+\textbf{Inferences.}
+(1) The overlapping line chart (Fig.~\ref{fig:37}a) shows the shared 2020 peak but hides individual topics: eight lines
+cross repeatedly between 40 and 150 posts per month.
+(2) Small multiples on a shared scale (Fig.~\ref{fig:37}b) separate the series, but each row has only one eighth of the
+height for a 0--238 range. Low-volume topics such as Knowledge and curiosity become thin slivers.
+(3) The horizon row uses the same height but only needs to resolve one band of 55.1 posts. Its effective vertical
+resolution is $238/55.1\approx4.3$ times higher than the small multiple's. Above- versus below-mean phases are also coded
+by hue, so they are visible pre-attentively. The trade-off is learnability: folded negatives and band shading must be
+explained (the legend gives the band limits).
+
+\subsection{Variation 2: temporal granularity (quarterly vs.\ yearly)}
+\figfull{Fig_38_horizon_topics_quarter_year.png}{Granularity comparison: (a) quarterly counts, $h=150.3$ posts/quarter; (b)
+yearly counts, $h=469$ posts/year (step rendering; the last bin is partial, data end 11~Sep~2024).}{fig:38}
+
+\textbf{Inferences.}
+(1) Quarterly aggregation (Fig.~\ref{fig:38}a) removes month-to-month noise while keeping turning points. Q\&A's darkest
+band is now a single quarter (Q3~2020), and Entertainment's two separate peaks (2018 and 2020) remain distinct.
+(2) Yearly aggregation (Fig.~\ref{fig:38}b) shows the long-run regime most clearly. 2020 is the darkest year for Q\&A,
+News, Photos and Memes. Entertainment is dark red from 2017 to 2020 and Text humour in 2019--2020. All topics are blue in
+2014--2016 and 2023--2024. The yearly view also loses information: it cannot show that News peaked in January~2021 or
+that Entertainment dipped in mid-2019.
+(3) Granularity therefore sets the question. Use monthly rows to attribute peaks to events and yearly rows to compare
+eras. The band height scales roughly with the bin length (55, 150, 469 posts), which is why a common colour does not mean
+a common count \emph{across} panels.
+
+\subsection{Variation 3: 50 subreddits, score anomaly}
+\figfull{Fig_39_horizon_subreddits_monthly.png}{Horizon plot of the monthly median $\log_{10}$(score) of each subreddit's top
+posts relative to the subreddit's overall median, for all 50 subreddits (rows grouped by topic, label colour = topic).
+$h=0.15$ dex (a factor of 1.41); deviations beyond 0.45 dex saturate. Months without a top post are blank.}{fig:39}
+
+\textbf{Inferences.}
+(1) Fifty series fit on one page only because each row is about 4\,mm high. A horizon plot is the only practical way to
+show this many series at monthly resolution.
+(2) The share of subreddits whose yearly median is above their own median peaks in 2017 (60\,\%) and 2020 (64\,\%) and falls
+to 18\,\% in 2023 and 16\,\% in 2024. The most recent top posts are both fewer \emph{and} lower-scoring, again an effect of
+survivorship plus declining engagement.
+(3) Individual communities stand out. Art's 2023--24 top posts are a full order of magnitude below its usual score (median
+deviation $-1.08$ dex), and GetMotivated, askscience, personalfinance and Showerthoughts are 0.3--0.5 dex below theirs.
+These communities lost reach after 2022. AskReddit and travel were above their medians in 2016.
+(4) Blank stretches carry information too: 18\,\% of subreddit-months have no top post. memes (53\,\%) and
+relationship\_advice (52\,\%) have the most gaps because their top posts are concentrated in a few years. A missing month is
+a gap, not ``average'', and the plot deliberately leaves it white.
+
+\subsection{Ridgeline plots}
+Each ridge is a Gaussian kernel density estimate~\cite{silverman1986}
+\begin{equation}
+\hat f_g(x)=\frac{1}{n_g h}\sum_{i\in g}\phi\!\left(\frac{x-x_i}{h}\right),
+\end{equation}
+with \textbf{one fixed bandwidth for all groups} ($h=0.06$ dex for $\log_{10}$ score and $h=0.08$ for $\log_{10}$(comments+1)).
+Shapes are therefore comparable, which would not be the case with a separate Scott or Silverman bandwidth per group. All
+groups share the $x$-axis. Heights are scaled by the global maximum density with overlap factor 1.6--2.2, and a white tick
+marks each median. We show three variations with different groupings and orderings.
+
+\figfullw{Fig_40_ridgeline_subreddits_score.png}{Ridgeline of $\log_{10}$(score) for the ~1,000 top posts of each of the 50
+subreddits, ordered by median (highest at top), colour = topic, bandwidth 0.06.}{fig:40}{0.75}
+
+\textbf{Inferences (Fig.~\ref{fig:40}).}
+(1) Medians span 1.9 orders of magnitude, from memes ($10^{5.13}\approx135$k) and pics (125k) down to listentothis
+($10^{3.24}\approx1.7$k). Being a ``top post'' means very different things in different communities.
+(2) The top of the ranking is dominated by image and meme communities (memes, pics, funny, aww, interestingasfuck, gaming,
+gifs), the middle by news and discussion, and the bottom by niche-interest communities (history, travel,
+InternetIsBeautiful, personalfinance, askscience, Documentaries), which matches the topic colours.
+(3) Shapes differ, not just positions. The largest default communities have extremely narrow ridges: todayilearned, aww and
+memes have a standard deviation of only 0.07 dex, so all their top 1,000 posts lie within a factor of about 1.4 of each
+other. AskReddit is similarly tight, with 80\,\% of its top posts between $10^{4.76}$ and $10^{4.96}$. At the other end, Art
+(0.49 dex), relationship\_advice (0.26) and InternetIsBeautiful (0.25) have wide, skewed ridges, where a few viral posts
+sit far above a modest bulk.
+
+\figfullw{Fig_41_ridgeline_years_score.png}{Ridgeline of $\log_{10}$(score) of all top posts by posting year, 2015--2024,
+ordered by time, bandwidth 0.06 (2011--14 omitted: 176 posts).}{fig:41}{0.75}
+
+\textbf{Inferences (Fig.~\ref{fig:41}).}
+(1) The median score rises from $10^{4.07}$ (11.7k, 2015) to a maximum of $10^{4.68}$ (47.4k, 2020) and then falls to
+$10^{4.23}$ (17.1k, 2024). The distributions shift right until 2020 and left after it, the same arc as the horizon
+counts.
+(2) The 2020, 2021 and 2022 ridges are almost identical (standard deviation 0.41--0.42 dex, 10th percentile
+$10^{4.02}$--$10^{4.03}$). This is the plateau of engagement in the corpus. 2015--16 have the same width but are shifted
+left by about 0.5 dex, because their communities were smaller when they were posted.
+(3) 2023 and especially 2024 are wider (standard deviation 0.52 and 0.56) and the 2024 ridge is \emph{bimodal}: a low mode at
+$10^{3.3}$--$10^{3.4}$ (about 2k) next to the usual mode at $10^{4.1}$--$10^{4.6}$. Recent posts in niche communities reach
+the top 1,000 with few votes, while mass-audience recent posts have not yet accumulated theirs. This is a censoring effect
+the reader must keep in mind.
+
+\figfullw{Fig_42_ridgeline_topics_comments.png}{Ridgeline of $\log_{10}$(comments+1) per post by topic category, ordered by
+median, bandwidth 0.08 (all 49,266 posts).}{fig:42}{0.75}
+
+\textbf{Inferences (Fig.~\ref{fig:42}).}
+(1) News, science and tech generates the most comments per top post (median 2,145), then Q\&A (1,263), Entertainment (1,201),
+Memes (1,136) and Photos (1,105). Creative and lifestyle is far behind (373), because people upvote art, food and DIY but
+rarely debate it.
+(2) Q\&A has the widest ridge (standard deviation 0.53 dex): AskReddit threads collect 6k--34k comments (10th to 90th
+percentile), while advice posts in LifeProTips or personalfinance receive hundreds. Its right tail is the longest of all
+topics, with a 99th percentile of $10^{4.57}\approx37$k comments.
+(3) Compared with Fig.~\ref{fig:40}, where Memes and Photos lead on score, the comment ranking reverses the visual
+communities. Score and discussion are different kinds of engagement, consistent with the negative ratio--comments relation
+found by brushing in I2a.
+
+\subsection{Observations and limitations (I3)}
+Horizon plots compress many series about 4$\times$ more efficiently than line charts and make above/below-baseline phases
+pre-attentive. Granularity and baseline must be chosen to match the question. Ridgelines with a fixed bandwidth allow
+honest comparison of distribution shape and location across 50 groups. Limitations: the counts reflect survivorship in an
+all-time-top sample, not posting volume. KDEs smooth the hard lower bound of the corpus (each subreddit's top-1,000
+threshold), so the left tails are slightly widened. Horizon plots need a legend to be read correctly.

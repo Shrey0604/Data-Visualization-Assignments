@@ -1,0 +1,49 @@
+% ============================================================================================
+\section{Discussion: Cross-Task Insights}
+\label{sec:discussion}
+\textbf{Heat, moisture and wind on the same dates.} Using the same eight dates in S1--S3 lets us read the three fields
+together.
+\begin{itemize}
+\item \emph{D1 (8~Jul).} The western heat wave ($\Tmax$ up to 53\,\degC, Fig.~\ref{fig:07}) coincides with VPD of
+  4--10\,kPa over the same deserts (Fig.~\ref{fig:16}). Meanwhile Beryl's circulation (Fig.~\ref{fig:21}a) pumps saturated
+  Gulf air inland. Texas and Arkansas are hot (33--38\,\degC) but have low VPD and heavy rain (Fig.~\ref{fig:09}a). Heat
+  stress there is humid heat, not drought stress.
+\item \emph{D2 (24~Jul).} The warm anomaly over Montana and the Dakotas (+10 to +15\,\degC, Fig.~\ref{fig:06}) matches the
+  season's largest $\ge$2\,kPa VPD area (34.2\,\%, Table~\ref{tab:evol}). The cool anomaly band from Texas to Tennessee is
+  where Fig.~\ref{fig:09} shows rain. Temperature anomalies largely follow cloud and rain.
+\item \emph{D3 (5~Aug).} Debby's closed vortex over the Big Bend (strongest vorticity of the four storms) coincides with
+  the season's wettest cell (331\,mm on D3; 401\,mm on the previous day) and a sub-1\,kPa VPD footprint over the Southeast.
+  The slow storm translated little, so wind, rain and moisture overlap.
+\item \emph{D7--D8 (26--27~Sep).} Helene drives the largest rain area (93.5\,mm box mean), the strongest daily winds
+  (16.1\,m/s), a $-10$ to $-13$\,\degC{} daytime anomaly under its rain shield (Fig.~\ref{fig:06}), and a moist VPD
+  footprint over the whole Southeast. Between D7 and D8 the wind vortex moves to Kentucky and Tennessee (Fig.~\ref{fig:24}h)
+  and the heaviest rain moves to the southern Appalachians (Fig.~\ref{fig:09}h). This is the vortex-to-rain chain behind
+  the inland flooding.
+\item \emph{Season.} Mean $\Tmax$ falls by about 4\,\degC{} from D1--D2 to D6--D8, the land share with VPD $\ge$2\,kPa halves,
+  and mean wind speed rises by about 40\,\% (2.8 to 3.9--4.0\,m/s). Summer heat gives way to more energetic early-autumn
+  circulation.
+\end{itemize}
+
+\textbf{Method-level insights.}
+(1) Normalisation and level choice repeat across tasks. Global vs.\ local colour scaling (S1), uniform vs.\ quantile vs.\
+domain contour levels (S2) and proportional vs.\ uniform arrows (S3) are the same decision: \emph{comparability across
+items vs.\ contrast within an item}.
+(2) Aggregation is both necessary and a source of error: block averaging of vectors (S3), Gaussian smoothing of contours
+(S2), monthly vs.\ yearly bins (I3) and k-means bundles (I2a). In each case we quantified what was lost (aliasing angles,
+isoline length, missing turning points, silhouette).
+(3) On the InfoVis side, the same structure appears through four lenses. The pandemic peak and the post-2021 decline show
+in the treemap (H3), the horizon plots and the year ridgelines. The visual-vs.\ discussion split shows in the treemap
+measures (score vs.\ comments), the parallel-coordinates brushing, the comment ridgelines and the network blocs (image
+hosts vs.\ news outlets). Each technique alone gives one view; together they triangulate the finding.
+
+\section{Conclusion}
+We built a reproducible pipeline: one command per task, every preprocessing decision logged, and every table generated from
+data. With it we produced 42 report figures (55 image files including sub-figures, plus five GIFs) covering colour mapping,
+contouring with an exactly validated Marching Squares and asymptotic decider, vector-field sampling and streamline seeding,
+five network layouts with quantitative comparison, D3 parallel coordinates with bundling, brushing and reordering, a
+zoomable treemap with three remodels and five tilings, and hand-built horizon and ridgeline plots. The SciVis results show
+how the 2024 hurricanes and the western heat wave appear in, and are distorted by, different encodings of daily 4\,km
+fields. The InfoVis results show how Reddit's largest communities divide into link ecosystems and engagement styles, and
+how strongly an all-time-top sample is shaped by survivorship. Future work: hourly data (e.g.\ ERA5) to resolve
+hurricane winds, canvas or WebGL rendering for parallel coordinates on all 49k posts, and a multi-decade gridMET baseline for
+anomalies.

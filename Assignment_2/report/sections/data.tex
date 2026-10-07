@@ -1,0 +1,166 @@
+% ============================================================================================
+\section{Data Handling and Preprocessing}
+\label{sec:data}
+Every decision below is also logged, with counts, in \fpath{notes/preprocessing_log.md} (reproduced in
+Appendix~\ref{app:log}).
+
+\subsection{gridMET download and inspection}
+\textbf{Download.} \fpath{download_gridmet.py} fetches \texttt{vs, th, tmmx, pr, vpd, rmax, srad} for 2024
+(28--205\,MB each, about 820\,MB in total) from the repository listing, which we verified rather than assumed. It shows
+a progress bar and resumes partial downloads with HTTP \texttt{Range} requests; one interrupted download was resumed
+successfully. Because the files are small, server-side OPeNDAP subsetting was not needed.
+
+\textbf{Raw schema.} \fpath{inspect_raw.py} prints each file without CF decoding, so we see what is on disk.
+Every variable is stored as \texttt{uint16} with \texttt{\_FillValue}=32767, under a long CF name that differs from the
+file abbreviation. The names are \texttt{air\_temperature}, \texttt{precipitation\_amount}, \texttt{wind\_speed},
+\texttt{wind\_from\_direction}, \texttt{mean\_vapor\_pressure\_deficit}, \texttt{relative\_humidity} and
+\texttt{surface\_downwelling\_shortwave\_flux\_in\_air}. The packing is variable-specific:
+temperature uses \texttt{scale\_factor}=0.1 and \texttt{add\_offset}=220\,K; VPD uses 0.01; direction uses 1.0; the
+others use 0.1. Dimensions are \texttt{(day, lat, lon)} = (366, 585, 1386), \texttt{day} is ``days since 1900-01-01'',
+and \textbf{latitude is stored in descending order} (49.40\,$\rightarrow$\,25.07\,$^\circ$N).
+
+\subsection{Subsetting, masking and unit conversion}
+\textbf{Lazy loading.} Files are opened with dask chunks equal to the on-disk chunking $(61, 98, 231)$, and one variable
+is processed at a time, so the full year (594\,MB per variable when decoded) is never in memory at once.
+
+\textbf{Temporal subset.} 1~Jul--30~Sep~2024 gives 92 days. \texttt{day} is renamed \texttt{time}.
+
+\textbf{Orientation.} We \emph{sort latitude ascending} once during preprocessing. Every downstream routine then uses
+the same convention: image origin at the bottom, \texttt{streamplot} requiring increasing $y$, and Marching-Squares row
+0 being the southern edge. This removes a whole class of flipped-map errors.
+
+\textbf{Masking.} CF decoding applies the scale and offset and turns the fill value into NaN. The land mask is
+\emph{identical} for all seven variables and constant across all 92 days: 483,879 of 810,810 cells, checked cell by cell.
+NaN cells (ocean, Canada, Mexico) are never interpolated. Plots show them in a neutral blue-grey labelled ``No data''.
+
+\textbf{Units.} Temperature is converted with
+\begin{equation}
+T[\si{\celsius}] = 0.1\,n + 220 - 273.15,
+\end{equation}
+where $n$ is the stored integer. Precipitation stays in mm\,day$^{-1}$, wind in m\,s$^{-1}$, VPD in kPa, $r_{\max}$ in \%
+and $s_{rad}$ in W\,m$^{-2}$. Outputs are float32 NetCDF with zlib compression
+(\fpath{data/processed/gridmet_<var>_2024JAS.nc}).
+
+\textbf{Plausibility of extremes.} No values were clipped, because all extremes have a physical explanation. The maximum
+$\Tmax$ is 53.85\,\degC{} (6~Jul, Death Valley). The \emph{minimum} daily maximum is $-6.35$\,\degC{} (23~Aug,
+41.40\,$^\circ$N 122.18\,$^\circ$W), which is the summit of Mt~Shasta at about 4,300\,m, so the 4\,km grid resolves
+high-elevation cold spots. The largest daily rain total is 401.4\,mm (4~Aug, 27.40\,$^\circ$N 82.39\,$^\circ$W, Sarasota--Manatee
+coast) in Debby's rain band.
+
+\subsection{Wind decomposition}
+gridMET stores the \emph{meteorological} direction $\theta$: where the wind blows \emph{from}, in degrees clockwise from
+north. Quiver plots and streamlines need the vector the air moves \emph{toward}, so
+\begin{equation}
+u = -v_s\sin\theta,\qquad v = -v_s\cos\theta \qquad(\theta\ \text{in radians}).
+\label{eq:wind}
+\end{equation}
+The built-in sanity check gives the following. A westerly ($\theta=270^\circ$) at 10\,m/s gives $u=+10$, $v=0$ (air
+moving east). A northerly ($\theta=0^\circ$) gives $v=-10$. $\theta=90^\circ$ gives $u=-10$, and $\theta=180^\circ$ gives
+$v=+10$. Values $\theta=0$ (63,867 cell-days) and $\theta=360$ (42,580) are equivalent and decompose identically. Only 39
+cell-days have $v_s<0.5$\,m/s, so undefined calm-wind directions are negligible. Over Florida on D7 this gives
+$(u,v)\approx(-6,+11)$\,m/s at Tampa from $\theta=151^\circ$, $v_s=12.5$\,m/s. That is a south-south-easterly wind blowing
+toward the north-north-west, consistent with Helene's counter-clockwise circulation east of its centre. The u/v fields are
+stored in \fpath{gridmet_wind_2024JAS.nc}. Cartopy then rotates the geographic east/north components into the Lambert
+conformal map frame.
+
+\subsection{Statistics and derived fields}
+For every variable and day we store $n$, min, max, mean, standard deviation and the 1st/5th/25th/50th/75th/95th/99th
+percentiles (\fpath{stats_per_day.csv}), plus the same over the whole period (Table~\ref{tab:global}).
+Table~\ref{tab:perdate} lists the values on the eight dates. The anomaly used for diverging maps is
+\begin{equation}
+a_{ij}(t) = \Tmax{}_{ij}(t) - \frac{1}{92}\sum_{t'}\Tmax{}_{ij}(t'),
+\label{eq:anom}
+\end{equation}
+so it is relative to each cell's own Jul--Sep 2024 mean. This removes the elevation and latitude signal and leaves only
+weather.
+
+\input{generated/tab_global}
+\input{generated/tab_perdate}
+
+\textbf{Normalisation formulas used in S1--S3.} A colour map $C:[0,1]\rightarrow\mathrm{RGB}$ is applied to a normalised
+value $\hat{x}$. We use linear normalisation $\hat{x}=(x-x_{\min})/(x_{\max}-x_{\min})$ with either \emph{global} bounds
+(over all 92 days) or \emph{local} bounds (the current day). Logarithmic normalisation is
+$\hat{x}=(\log x-\log x_0)/(\log x_1-\log x_0)$ with $x_0=0.1$\,mm, applied only to $x>0$. The two-slope diverging
+normalisation maps $[x_{\min},0]\rightarrow[0,0.5]$ and $[0,x_{\max}]\rightarrow[0.5,1]$, so zero always sits at the
+neutral centre colour. Discrete classes use a \texttt{BoundaryNorm} with breaks $b_0<\dots<b_K$ and
+$\hat{x}=k/(K-1)$ for $b_k\le x<b_{k+1}$.
+
+\subsection{A1 cleaning}
+\label{sec:a1clean}
+\fpath{a1_preprocess.py} re-implements the A1 cleaning so that A2 is self-contained.
+\begin{itemize}
+\item Merge the 50 files (49,266 rows) and confirm there are no duplicate ids.
+\item Parse both timestamp formats; the range is 27~Sep~2011 to 11~Sep~2024 UTC.
+\item Drop five columns: \texttt{num\_awards} (all zero), \texttt{crosspost\_subreddits} (99.35\,\% missing),
+  \texttt{is\_bot} (8.53\,\% missing), \texttt{is\_megathread} (21 True) and \texttt{body} (82.79\,\% missing).
+\item \textbf{Drop no rows.} The corpus is the top tail by construction, so extreme scores are the object of study and
+  are handled with log scales.
+\end{itemize}
+New variables are year, month, UTC hour, decimal year, title length, $\log_{10}$ score and a five-level era
+(2011--16, 2017--18, 2019--20, 2021--22, 2023--24, chosen so the sparse early years are pooled).
+
+\textbf{Domain normalisation.} Domain strings are lower-cased, mobile and \texttt{www} prefixes are stripped, platform
+aliases are merged (\texttt{youtu.be}$\rightarrow$\texttt{youtube.com}, \texttt{i.imgur.com}$\rightarrow$\texttt{imgur.com},
+Reddit's \texttt{i./v./preview.redd.it}, \texttt{reddituploads.com} and \texttt{redditmedia.com}$\rightarrow$\texttt{redd.it}),
+and each host is reduced to its registrable domain. For example \texttt{cdna.artstation.com} becomes
+\texttt{artstation.com}, and \texttt{bbc.co.uk} keeps its second-level suffix. This took 3,420 raw strings down to 3,082
+domains. Without it, one platform appeared as several unconnected nodes; it was found when the first network had
+\texttt{cdna} and \texttt{cdnb.artstation.com} as separate nodes. Each post is then classified as a self post,
+Reddit-hosted media (15,079), imgur (4,112), YouTube (3,040), other video host (890) or external website (13,010).
+
+\textbf{Topic categories.} We grouped the 50 communities by purpose into eight topics: Q\&A and advice (8),
+Text humour and stories (4), News, science and tech (8), Memes and GIFs (4), Photos and curiosities (7), Creative and
+lifestyle (5), Entertainment and media (10), and Knowledge and curiosity (4). The topics are the common colour key in
+I1--I3.
+
+\subsection{Derived InfoVis structures}
+\label{sec:derive}
+\textbf{(1) Network for I1.} The graph is bipartite: subreddits $\leftrightarrow$ external domains. Edge $(s,d)$ exists if
+subreddit $s$ has a top post linking to $d$, and its weight $w_{sd}$ is the number of such posts. Self posts and Reddit's
+own media host are excluded because they say nothing about where a community links \emph{out} to. Domains with fewer
+than three top posts are removed (3,035 $\rightarrow$ 628 domains) to suppress one-off links. The result has 671 nodes
+(43 subreddits, 628 domains), 2,350 edges and total weight 18,245 posts, which is well beyond a toy graph. The seven
+text-only communities (AskReddit, LifeProTips, NoStupidQuestions, Showerthoughts, explainlikeimfive, personalfinance,
+relationship\_advice) have no qualifying link. Their absence is itself a finding. The more obvious crosspost graph was
+rejected because \texttt{crosspost\_subreddits} is 99.35\,\% missing.
+
+\textbf{(2) Hierarchies for I2b.} Algorithm~\ref{alg:tree} nests the flat table by an ordered list of categorical
+levels. Changing the order or the levels \emph{remodels} the tree:
+H1 topic$\rightarrow$subreddit$\rightarrow$post type (135 leaves);
+H2 post type$\rightarrow$hosting class$\rightarrow$topic$\rightarrow$subreddit (250 leaves);
+H3 era$\rightarrow$year$\rightarrow$topic$\rightarrow$subreddit (486 leaves).
+Each leaf stores three additive measures (posts, total score, total comments), so the size encoding can also be
+switched. That gives $3\times3$ distinct trees.
+
+\begin{algorithm}[!t]
+\caption{Tabular-to-tree remodel (\texttt{to\_tree})}
+\label{alg:tree}
+\begin{algorithmic}[1]
+\REQUIRE table $R$, ordered level list $\mathcal{L}=(\ell_1,\dots,\ell_m)$, measures $\mathcal{M}$
+\ENSURE nested node $\{name, children\}$
+\STATE \textbf{function} \textsc{Rec}$(S, k, label)$
+\IF{$k = m$}
+  \RETURN $\{name{:}\,label\} \cup \{\mu{:}\sum_{r\in S} r.\mu \mid \mu\in\mathcal{M}\}$
+\ENDIF
+\STATE $C \leftarrow [\,]$
+\FORALL{distinct value $g$ of $\ell_{k+1}$ in $S$ (sorted)}
+  \STATE append \textsc{Rec}$(\{r\in S : r.\ell_{k+1}=g\}, k+1, g)$ to $C$
+\ENDFOR
+\RETURN $\{name{:}\,label,\ children{:}\,C\}$
+\STATE \textbf{return} \textsc{Rec}$(R, 0, \text{root})$
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{(3) Multivariate table for I2a.} A stratified random sample of 40 posts per subreddit (seed 42) gives 2,000
+records, which is enough to show structure while keeping interactive SVG brushing fast. It has seven quantitative axes
+(decimal year, UTC hour, title length, upvote ratio, score, comments, crossposts) and one ordinal axis (post type). The
+grouping variables are topic, post type and a k-means~\cite{lloyd1982} cluster. k-means runs on min--max-normalised axes,
+with $\log_{10}$ applied to score and $\log_{10}(x+1)$ to comments and crossposts, the same transforms as the axis
+scales. $k=4$ maximised the silhouette~\cite{rousseeuw1987} over $k=3..8$ at 0.248, with values of 0.241, 0.248, 0.229,
+0.221, 0.226 and 0.194 for $k=3..8$. The low value shows that the clusters are soft, which is expected for engagement data,
+and we report it rather than hide it. The cluster sizes are 552, 675, 553 and 220.
+
+\textbf{(4) Time series for I3.} We build monthly counts of top posts and the monthly median $\log_{10}$(score), both per
+topic and per subreddit, for Jan~2016--Aug~2024 (104 months, 98.3\,\% of posts). Before 2016 there are fewer than 50 posts
+per month in total, and September~2024 is cut off at 11~Sep, so neither is used. Quarterly and yearly aggregates provide
+the temporal-granularity comparison. Months with no top post are true zeros for counts, and are left blank for medians.

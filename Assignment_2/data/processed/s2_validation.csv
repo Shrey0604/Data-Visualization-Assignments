@@ -1,0 +1,4 @@
+level_kPa,saddle_cells,segments_own_high,segments_skimage_high,identical_segments_high_vs_high,match_pct,own_high_vs_skimage_low_identical,segments_own_asymptotic,asymptotic_joined_saddles,mean_joined_saddles,segments_differing_asym_vs_skimage_high,max_vertex_dist_cells,length_own_asym_cells,length_skimage_cells,length_contourpy_cells,time_own_s,time_skimage_s
+1.005,451,17993,17993,17993,100.0,17091,17993,195,186,1024,0.0,12951.740069,13144.33863,13036.576316,0.11067,0.050855
+2.005,386,21715,21715,21715,100.0,20943,21715,177,181,836,0.0,15902.702486,16086.349702,15917.743161,0.115005,0.054054
+3.005,179,11877,11877,11877,100.0,11519,11877,84,81,380,0.0,8843.553733,8932.783969,8853.721738,0.119671,0.039551

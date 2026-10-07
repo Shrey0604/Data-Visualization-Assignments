@@ -1,0 +1,8 @@
+colormap,L_start,L_end,L_min,L_max,monotonic,n_sign_changes
+jet,12.89,25.42,12.89,95.87,False,3
+turbo,11.95,24.49,11.95,90.86,False,1
+viridis,14.95,90.9,14.95,90.9,True,0
+inferno,0.12,97.89,0.12,97.89,True,0
+cividis,13.92,91.23,13.92,91.23,True,0
+RdBu_r,20.08,19.98,19.98,97.09,False,1
+coolwarm,37.7,37.71,37.7,87.96,False,1

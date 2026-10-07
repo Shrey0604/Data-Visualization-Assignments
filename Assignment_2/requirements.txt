@@ -1,0 +1,31 @@
+# DAS732 A2 (Team Silica) — pinned dependencies. Developed on Python 3.14.6 (>=3.10 required).
+# Install:  python -m pip install -r requirements.txt
+#           python -m playwright install chromium     (only for I2 screenshots)
+# SciVis data handling
+xarray==2026.9.0
+netCDF4==1.7.4
+h5netcdf==1.8.1
+dask==2026.8.0
+numpy==2.5.3
+pandas==3.0.6
+scipy==1.18.1
+# Plotting / maps / animation
+matplotlib==3.11.2
+cartopy==0.26.0
+pyproj==3.8.0
+shapely==2.1.2
+imageio==2.38.0
+pillow==12.3.0
+scikit-image==0.26.0
+scikit-learn==1.9.1
+# InfoVis
+networkx==3.7
+python-louvain==0.16
+pyvis==0.3.2
+plotly==7.1.0
+joypy==0.2.6
+adjustText==1.4.0
+playwright==1.63.0
+# Utilities
+requests==2.34.2
+tqdm==4.70.1

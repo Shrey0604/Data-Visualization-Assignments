@@ -1,0 +1,5 @@
+k,spacing_km,n_pairs,median_dir_diff_deg,p90_dir_diff_deg,share_dir_diff_gt_45,median_speed_diff_ms,p90_speed_diff_ms,median_vector_mean_over_mean_speed
+5,20,154312,1.121,5.061,0.164,0.03,0.086,0.999
+10,40,38768,1.499,6.827,0.361,0.063,0.243,0.997
+20,80,9696,3.013,12.775,1.073,0.142,0.508,0.991
+40,160,2344,4.977,21.145,2.517,0.261,0.884,0.975

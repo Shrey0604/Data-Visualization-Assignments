@@ -1,0 +1,51 @@
+tiling,sort,view,n,mean,median,max,tau
+squarify,value,H1 root (8 topics),8,1.417,1.406,1.933,0.857
+squarify,value,H1 Entertainment (10 subreddits),10,2.384,2.144,3.803,0.911
+squarify,value,H2 root (4 post types),4,4.062,2.6,10.019,1.0
+squarify,value,H3 root (5 eras),5,2.059,2.049,2.845,1.0
+squarify,value,H3 era 2017-18 (2 years),2,1.185,1.185,1.336,1.0
+squarify,name,H1 root (8 topics),8,2.326,2.011,4.245,0.929
+squarify,name,H1 Entertainment (10 subreddits),10,2.366,2.148,3.783,0.911
+squarify,name,H2 root (4 post types),4,2.266,1.339,5.354,1.0
+squarify,name,H3 root (5 eras),5,2.45,1.376,5.432,1.0
+squarify,name,H3 era 2017-18 (2 years),2,1.185,1.185,1.336,1.0
+binary,value,H1 root (8 topics),8,1.58,1.611,2.095,1.0
+binary,value,H1 Entertainment (10 subreddits),10,1.596,1.869,2.139,1.0
+binary,value,H2 root (4 post types),4,2.266,1.339,5.354,1.0
+binary,value,H3 root (5 eras),5,1.162,1.059,1.448,1.0
+binary,value,H3 era 2017-18 (2 years),2,1.185,1.185,1.336,1.0
+binary,name,H1 root (8 topics),8,1.449,1.337,2.16,1.0
+binary,name,H1 Entertainment (10 subreddits),10,1.597,1.868,2.129,0.911
+binary,name,H2 root (4 post types),4,2.266,1.339,5.354,1.0
+binary,name,H3 root (5 eras),5,2.45,1.376,5.432,1.0
+binary,name,H3 era 2017-18 (2 years),2,1.185,1.185,1.336,1.0
+slice,value,H1 root (8 topics),8,21.404,20.378,29.927,1.0
+slice,value,H1 Entertainment (10 subreddits),10,23.698,23.63,24.066,1.0
+slice,value,H2 root (4 post types),4,19.838,8.652,56.263,1.0
+slice,value,H3 root (5 eras),5,24.886,11.436,52.778,1.0
+slice,value,H3 era 2017-18 (2 years),2,4.818,4.818,5.431,1.0
+slice,name,H1 root (8 topics),8,21.404,20.378,29.927,1.0
+slice,name,H1 Entertainment (10 subreddits),10,23.698,23.63,24.066,1.0
+slice,name,H2 root (4 post types),4,19.838,8.652,56.263,1.0
+slice,name,H3 root (5 eras),5,24.886,11.436,52.778,1.0
+slice,name,H3 era 2017-18 (2 years),2,4.818,4.818,5.431,1.0
+dice,value,H1 root (8 topics),8,3.812,3.629,5.329,1.0
+dice,value,H1 Entertainment (10 subreddits),10,4.22,4.208,4.286,1.0
+dice,value,H2 root (4 post types),4,3.533,1.541,10.019,1.0
+dice,value,H3 root (5 eras),5,4.432,2.036,9.399,1.0
+dice,value,H3 era 2017-18 (2 years),2,1.185,1.185,1.336,1.0
+dice,name,H1 root (8 topics),8,3.812,3.629,5.329,1.0
+dice,name,H1 Entertainment (10 subreddits),10,4.22,4.208,4.286,1.0
+dice,name,H2 root (4 post types),4,3.533,1.541,10.019,1.0
+dice,name,H3 root (5 eras),5,4.432,2.036,9.399,1.0
+dice,name,H3 era 2017-18 (2 years),2,1.185,1.185,1.336,1.0
+sliceDice,value,H1 root (8 topics),8,3.812,3.629,5.329,1.0
+sliceDice,value,H1 Entertainment (10 subreddits),10,23.698,23.63,24.066,1.0
+sliceDice,value,H2 root (4 post types),4,3.533,1.541,10.019,1.0
+sliceDice,value,H3 root (5 eras),5,4.432,2.036,9.399,1.0
+sliceDice,value,H3 era 2017-18 (2 years),2,4.818,4.818,5.431,1.0
+sliceDice,name,H1 root (8 topics),8,3.812,3.629,5.329,1.0
+sliceDice,name,H1 Entertainment (10 subreddits),10,23.698,23.63,24.066,1.0
+sliceDice,name,H2 root (4 post types),4,3.533,1.541,10.019,1.0
+sliceDice,name,H3 root (5 eras),5,4.432,2.036,9.399,1.0
+sliceDice,name,H3 era 2017-18 (2 years),2,4.818,4.818,5.431,1.0

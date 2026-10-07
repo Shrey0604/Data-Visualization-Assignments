@@ -1,0 +1,4 @@
+scheme,levels,segments,min_band_share_pct,max_band_share_pct
+Uniform: every 0.5 kPa (0.5-5.0),0.5 1 1.5 2 2.5 3 3.5 4 4.5 5,113726,0.73,26.41
+Quantile: deciles of the day's land cells,0.53 0.74 0.92 1.11 1.37 1.8 2.13 2.49 3.16,147675,9.64,10.21
+Domain thresholds: 0.5 / 1 / 2 / 3 / 4 kPa,0.5 1 2 3 4,69862,3.48,31.24

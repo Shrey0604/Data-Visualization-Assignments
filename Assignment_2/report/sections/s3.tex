@@ -1,0 +1,168 @@
+% ============================================================================================
+\section{S3: Quiver Plots and Streamlines (Owner: Parthsarati Samanta, BT2024083)}
+\label{sec:s3}
+\textbf{Method.} Vectors are the 10\,m wind components from Eq.~\eqref{eq:wind}, i.e.\ the direction the air moves. They are
+given as geographic east/north components and passed to Cartopy with \texttt{transform=PlateCarree}, which rotates them
+into the Lambert map frame. Arrows use \texttt{pivot='middle'}, and a quiver key gives the 10\,m/s reference length. We did
+both assignment options: (a) grid sampling with proportional vs.\ same-length arrows, and (b) streamlines vs.\ quiver with
+three seeding strategies. We also added regional zooms of all four landfalls. D7 (Helene landfall) is the main test case
+because it has the strongest and most structured winds of the season. Script: \fpath{scivis/s3_quiver_streamlines/run.py}.
+
+\subsection{Grid sampling: stride and aliasing}
+The native grid has 483,879 land vectors, about 4\,km apart, far too many to draw. Fig.~\ref{fig:18} shows plain striding
+(every $k$-th cell) for $k$ = 10, 20, 40, giving 4,862, 1,219 and 295 arrows. Fig.~\ref{fig:19} compares striding with
+$k\times k$ \emph{block averaging}:
+\begin{equation}
+\bar{\mathbf{v}}_B = \frac{1}{|B\cap\Omega|}\sum_{(i,j)\in B\cap\Omega}(u_{ij},v_{ij}),
+\end{equation}
+where $\Omega$ is the land mask. Blocks with less than 50\,\% land are dropped. Table~\ref{tab:alias} quantifies the
+difference over all eight dates (code in Appendix~\ref{app:code}).
+
+\figfull{Fig_18_quiver_stride.png}{Plain striding on D7: every 10th, 20th and 40th cell (about 40, 80 and 160\,km spacing);
+magnitude-proportional arrows over the speed field (GnBu, 0--14\,m/s). Reference arrow 10\,m/s.}{fig:18}
+
+\figfull{Fig_19_quiver_stride_vs_block.png}{Striding vs.\ block averaging in the Helene zoom on D7 for $k=20$ (top) and $k=40$
+(bottom). (c) Direction difference between the point sample and the block mean, pooled over all 8 dates, vs.\ spacing.
+(f) Speed difference and the ratio $|\bar{\mathbf{v}}|/\overline{|\mathbf{v}|}$, which measures vector cancellation inside a
+block.}{fig:19}
+\input{generated/tab_s3_alias}
+
+\textbf{Inferences.}
+(1) $k=10$ (4,862 arrows) produces a solid black texture. Arrows overlap in the 8--12\,m/s Florida flow, and the speed
+background is hidden. $k=40$ (295 arrows) is clean but represents a hurricane-scale circulation over the Southeast with
+only a few dozen arrows. $k=20$ (about 80\,km, 1,219 arrows) is the best compromise at CONUS scale. Clutter rises roughly
+with $k^{-2}$, while the information that remains depends on the scale of the feature.
+(2) Striding \emph{aliases}: one 4\,km cell stands for a 160\,km block. The median direction error against the block mean
+grows from 1.1$^\circ$ ($k=5$) to 5.0$^\circ$ ($k=40$), and the 90th percentile from 5$^\circ$ to 21$^\circ$. At $k=40$,
+2.5\,\% of sampled arrows point more than 45$^\circ$ away from the local mean flow, mostly in mountains and coastal
+convergence zones. Their direction depends on which cell the stride happens to hit.
+(3) Block averaging is a low-pass filter, so it is the correct choice before subsampling. In Fig.~\ref{fig:19} the
+block-mean arrows over Georgia and the Carolinas turn smoothly with Helene's circulation. The strided arrows at $k=40$
+include some arrows across the Appalachians that deviate visibly from their neighbours.
+(4) Averaging has a cost: vectors cancel inside a block. The ratio of the block-mean vector's magnitude to the mean
+speed falls from 0.999 to 0.975 at $k=40$. Averaged arrows are therefore slightly too short where the flow turns,
+for example near a circulation centre. The speed background (from $v_s$, not $|\bar{\mathbf{v}}|$) is kept so this bias
+is visible.
+
+\subsection{Magnitude-proportional vs.\ uniform-length arrows}
+\figfull{Fig_20_quiver_proportional_vs_uniform.png}{D7 wind with 20$\times$20 (CONUS) and 8$\times$8 (Helene zoom) block means.
+(a, c) Arrow length proportional to speed; (b, d) unit-length arrows coloured by speed (plasma, 0--12\,m/s).}{fig:20}
+
+\textbf{Inferences.}
+(1) Proportional arrows (Fig.~\ref{fig:20}a, c) make the speed gradient obvious: the Florida peninsula arrows are 3--4 times
+longer than those over the Great Basin. But the long arrows overlap their neighbours (the 8$\times$8 Florida zoom becomes a
+black mass), and the direction of weak flow (below 2\,m/s across Nevada, Utah and Arizona) is nearly unreadable because
+those arrows shrink to dots.
+(2) Unit-length arrows (Fig.~\ref{fig:20}b, d) show direction everywhere at equal visual weight. They reveal flow
+patterns that the proportional version hides: diffuse, variable flow over the interior West; a continuous belt of
+southerly (northward-moving) flow from Texas through the Plains to the Dakotas; and the cyclonic turning of Helene's flow
+from south-south-east over Florida to east and south-east over Georgia and the Carolinas.
+(3) Colour carries the magnitude in the uniform version. It reads less precisely than length but never overlaps. The
+peninsula mean is $(\bar u,\bar v)=(-5.3,+9.5)$\,m/s with mean speed 11.2\,m/s (yellow). The same arrows in panel (c) are
+the longest of the map.
+(4) Recommendation: use proportional arrows for quantitative comparison at coarse density; use uniform arrows plus colour
+to show circulation patterns at high density.
+
+\subsection{Regional zooms of the landfalls}
+\figfull{Fig_21_hurricane_zooms.png}{The four landfall days: speed (colour) with 7$\times$7 block-mean vectors. The red X
+marks the maximum of smoothed cyclonic relative vorticity $\zeta=\partial v/\partial x-\partial u/\partial y$ over land;
+the star marks the maximum daily-mean speed.}{fig:21}
+\input{generated/tab_s3_regional}
+
+\textbf{Inferences.}
+(1) \textbf{Beryl, D1.} A closed counter-clockwise circulation is centred over the upper Texas coast; the vorticity
+maximum, $24\times10^{-5}$\,s$^{-1}$, is at 29.78\,$^\circ$N, 96.06\,$^\circ$W. The strongest daily-mean wind (12.0\,m/s) is
+just east of it at 29.44\,$^\circ$N, 95.43\,$^\circ$W (south of Houston, near Freeport), consistent with the right-front quadrant of a
+northward-moving storm. Beryl made landfall near Matagorda (about 28.7\,$^\circ$N, 96.0\,$^\circ$W) as a Category~1
+hurricane at about 09~UTC on 8~July~\cite{nhc_tcr}. The daily-mean vortex sits about 120\,km further north because the
+storm moved inland during the gridMET day, so a daily field places a moving storm along its track, not at landfall.
+A broad band of 6--9\,m/s southerly inflow covers Louisiana.
+(2) \textbf{Debby, D3.} The circulation centre (vorticity maximum $45\times10^{-5}$\,s$^{-1}$, the strongest of the four) is
+over the Florida Big Bend at 30.23\,$^\circ$N, 83.35\,$^\circ$W. That is about 60\,km north of Debby's landfall near Steinhatchee
+(Category~1, about 11~UTC on 5~August~\cite{nhc_tcr}). The daily-mean field keeps a tight closed vortex because the storm
+was still close to its landfall point during most of the day. The fastest winds (12.0\,m/s) are on its east side on the Atlantic coast near the Florida--Georgia border, where southerly flow over
+the peninsula curves north-west.
+(3) \textbf{Francine, D6.} The vorticity maximum ($15\times10^{-5}$\,s$^{-1}$) is at 30.23\,$^\circ$N, 88.31\,$^\circ$W on the
+Mississippi coast, and the maximum speed (9.8\,m/s) is over the Louisiana delta. Inland, the field is dominated by a uniform
+easterly flow over Mississippi, Alabama and Georgia. Francine is the weakest of the four in gridMET daily means.
+(4) \textbf{Helene, D7.} The centre passed over the Gulf and therefore lies outside the land mask. The land shows only the
+\emph{eastern half} of the vortex: 11--16\,m/s south-south-easterlies over the whole peninsula turning to south-easterlies
+over Georgia and the Carolinas. The land vorticity maximum is at the south-west Florida coast (26.57\,$^\circ$N), which is a
+shear line at the coast, not the eye. This is a key limitation of a land-only dataset for tropical cyclones: the
+circulation centre must be inferred from the curvature of the flow.
+(5) Daily averaging smears a moving storm along its track. Peak daily means of 10--16\,m/s are far below sustained
+hurricane-force winds (at least 33\,m/s), so these fields show the storm-scale circulation, not the hazard.
+
+\subsection{Streamlines vs.\ quiver}
+Streamlines are integral curves of the vector field, tangent to $\mathbf{v}$ everywhere. Matplotlib's \texttt{streamplot}
+integrates them on a regular grid. Because the map is projected, we regrid $(u,v)$ (rotated into the map frame) onto a
+regular grid in projected metres (360$\times$224 for CONUS) and mask points outside the land mask, so streamlines stop at
+the coast. Cartopy's built-in regridding (30$\times$density points) was too coarse. One rendering pitfall was found and
+fixed: Matplotlib's streamline arrowheads were drawn with wrong orientation on a GeoAxes. We verified segment directions
+numerically (0 of 74 sampled segments reversed) and redraw the heads as quiver arrows in map coordinates.
+
+\figfull{Fig_22_streamlines_vs_quiver.png}{D7: (a) quiver of 20$\times$20 block means over the speed field; (b) streamlines
+(density 2.4, field coarsened 3$\times$3) with line width and colour proportional to speed.}{fig:22}
+
+\textbf{Inferences.}
+(1) Streamlines show \emph{continuity} that quivers leave to the reader. In Fig.~\ref{fig:22}b one can follow a single
+air stream from the Gulf coast of Texas north through Oklahoma, Kansas and Nebraska to the Dakotas: the Great Plains
+southerly flow. One can also follow Helene's inflow from the Florida peninsula curving west and north-west across Georgia and
+the Carolinas towards Tennessee.
+(2) Streamlines expose \emph{shear and rotation}. Along about 95\,$^\circ$W a sharp shear zone separates the northward Plains
+flow over Kansas and Nebraska from southward flow over Missouri and Arkansas: neighbouring streamlines run in opposite
+directions. Small closed eddies appear
+over the Great Basin and Four Corners region, and over northern Lake Michigan. In the quiver plot these features appear only as
+inconsistent arrow directions.
+(3) What streamlines hide: line density reflects the seeding algorithm, not speed, so magnitude must be coded separately
+(colour and width here). Values at a given location cannot be read, and in the slow interior West (below 3\,m/s) the lines
+wander and suggest more coherent flow than the 4\,km data support. Quivers remain better for local, quantitative
+reading at known positions.
+
+\subsection{Streamline seeding strategies}
+Fig.~\ref{fig:23} compares three seeding strategies with the \emph{same number of seeds} (112) in the Helene zoom, using
+unbroken streamlines integrated in both directions from each seed~\cite{turk1996,jobard1997}.
+\begin{itemize}
+\item \emph{Uniform grid}: a 15$\times$13 lattice of land points.
+\item \emph{Random}: uniform on land cells, seed 7.
+\item \emph{Feature-based}: 88 seeds drawn with probability $\propto v_s^4$ plus a 24-seed ring of radius 1.2$^\circ$
+  around the maximum of smoothed cyclonic vorticity.
+\end{itemize}
+\figfull{Fig_23_streamline_seeding.png}{Seeding strategies on D7 (Helene zoom), 112 seeds each (red dots); streamline
+colour = speed, grey background = speed. Coverage = share of land cells within about 25\,km of a streamline.}{fig:23}
+\input{generated/tab_s3_seed}
+
+\textbf{Inferences.}
+(1) Uniform seeds give the most even coverage (98.9\,\% of land) and an unbiased overview. Every region gets lines, including
+the slow flow over Alabama and Kentucky, but the high-speed core is covered last (92.6\,\%).
+(2) Random seeds give similar coverage (98.0\,\%) with visible clumping, for example several seeds close together near the Mississippi River at about 35\,$^\circ$N
+that duplicate one another while gaps open elsewhere, and results change with the seed. They are useful only to show that
+conclusions do not depend on a lattice.
+(3) Feature-based seeds concentrate on the flow that matters, covering 97.8\,\% of the top-10\,\% speed cells with 48\,\% fewer
+line segments. The ring makes the strong south-south-easterly current over the peninsula and its curvature toward the Big
+Bend explicit. The price is 77\,\% land coverage: slow regions are left empty, which is fine for an event narrative but
+misleading as a general overview.
+
+\subsection{Wind evolution over the eight dates}
+\figfull{Fig_24_wind_evolution.png}{10\,m wind on the eight dates: speed (fixed 0--14\,m/s) and 24$\times$24 block-mean vectors
+(about 96\,km). All eight frames of the GIF \fpath{Fig_24_wind_evolution.gif}, which uses 20$\times$20 blocks.}{fig:24}
+\input{generated/tab_s3_dates}
+
+\textbf{Inferences.}\footnote{Animation: \fpath{images/Fig_24_wind_evolution.gif} (8 frames, 1 frame/s, fixed speed colour bar).}
+(1) Mean CONUS speed rises through the season from 2.8\,m/s (D1) to 3.9--4.0\,m/s (D6--D8) (Table~\ref{tab:s3dates}), as
+the westerlies strengthen and migrate south in early autumn. The 99th percentile jumps to 10.1--10.3\,m/s only on the
+Helene days.
+(2) The share of cells with an eastward component falls from 62\,\% (D1) to 41\,\% (D5, D6), and the mean meridional
+component is northward on seven dates. Late summer over CONUS is dominated by southerly return flow around the
+Atlantic subtropical high, not by westerlies, which a pure ``prevailing westerlies'' expectation would get wrong.
+(3) Event signatures: Beryl's cyclone over east Texas and Louisiana (D1); a separate cyclone over Minnesota and Wisconsin plus
+Debby in Florida (D3); 5\,m/s mean southerly flow over the northern Plains (D5, 35--48\,$^\circ$N, 95--102\,$^\circ$W).
+(4) The clearest signal is on D8. Helene's remnant is a large closed counter-clockwise gyre centred over western Kentucky and
+Tennessee (vorticity maximum near 36.6\,$^\circ$N, 87.2\,$^\circ$W) with 10--14\,m/s winds over Georgia and the Carolinas.
+Between landfall (about 10~miles west-southwest of Perry, about 30.0\,$^\circ$N 83.7\,$^\circ$W~\cite{nhc_tcr}) and D8 the vortex has moved about 800\,km inland, which explains the inland flooding rain in Fig.~\ref{fig:09}h.
+
+\subsection{Observations and limitations (S3)}
+Block averaging before subsampling, uniform arrows plus colour for pattern, proportional arrows for magnitude, streamlines
+for continuity and topology, and feature seeding for event narratives together give a complete toolkit. Limitations: daily
+means lose diurnal reversals such as sea breezes and mountain--valley winds, and hurricane peaks. The wind source is coarser
+than the 4\,km grid. Land-only coverage cuts every hurricane in half at the coast.

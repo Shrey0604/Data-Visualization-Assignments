@@ -1,0 +1,109 @@
+% ============================================================================================
+\section{Introduction}
+\label{sec:intro}
+Assignment~2 asks each team to practise scientific visualization (SciVis) on a gridded geophysical dataset and
+information visualization (InfoVis) on the tabular dataset it used in Assignment~1 (A1). There are three tasks per
+domain. Each member owns exactly one SciVis and one InfoVis task, with no joint ownership apart from the shared data
+preparation (Table~\ref{tab:contrib}).
+
+\textbf{SciVis.} We use gridMET~\cite{abatzoglou2013,gridmet_site} for the three-month slice 1~July--30~September 2024
+(92 days). % TODO verify: slice confirmed via the TA Google form
+Late summer 2024 was meteorologically rich over CONUS. Four landfalling Atlantic hurricanes (Beryl, Debby, Francine and
+Helene~\cite{nhc_tcr}) and a long western heat wave give spatially sharp, physically interpretable structure in all
+three quantities we visualize: temperature (S1), atmospheric dryness (S2) and wind (S3). A quiet summer would be dominated
+by smooth climatological gradients. These events instead put local extremes next to large-scale patterns, which is
+exactly what tests colour normalisation, contour placement and vector sampling.
+
+\textbf{InfoVis.} Our A1 dataset holds the roughly 1,000 all-time top posts of each of 50 large subreddits, 49,266 posts in
+total, posted 2011--2024~\cite{kaggle_reddit}. Each post has a score (net upvotes), upvote ratio, comment and crosspost
+counts, a timestamp, a post type and a link domain. None of the required structures (a network, hierarchies, a
+multivariate table and time series) exists as such in the data. Section~\ref{sec:data} documents how each was derived.
+
+\textbf{Tooling.} The work uses Python with xarray~\cite{hoyer2017}, Matplotlib~\cite{hunter2007}, Cartopy~\cite{cartopy},
+scikit-image~\cite{vanderwalt2014} and NetworkX~\cite{hagberg2008}, plus D3.js v7~\cite{bostock2011} for the
+browser views and Playwright~\cite{playwright} for scripted high-resolution screenshots. Every figure regenerates with one
+command per task (README). Figures are numbered as in \fpath{images/}, and the figure index is
+Table~\ref{tab:figindex} in the appendix.
+
+\begin{table}[!t]
+\centering
+\caption{Contribution table. Each member owns one SciVis and one InfoVis task; only data preparation is shared.}
+\label{tab:contrib}
+\footnotesize
+\begin{tabular}{p{1.9cm}p{2.9cm}p{2.8cm}}
+\toprule
+Member & Owned tasks & Shared data-preparation part \\
+\midrule
+Sidhanth Prabhu (BT2024027) & S1 colour mapping (+ GIFs); I1 node-link diagram, layouts, filtering, GEXF/PyVis & gridMET download, schema inspection, subsetting and unit conversion \\
+Shrey Modi (BT2024125) & S2 Marching Squares, filled contours (+ GIF); I3 horizon and ridgeline plots & A1 cleaning; network, hierarchy, multivariate and time-series derivations \\
+Parthsarati Samanta (BT2024083) & S3 quiver and streamlines (+ GIF); I2 D3 parallel coordinates and zoomable treemap & Wind decomposition, statistics tables and evidence-based date selection \\
+\bottomrule
+\end{tabular}
+\end{table}
+% TODO verify: split of the shared preprocessing between members (assigned by us; edit if different)
+
+\subsection{The gridMET dataset}
+gridMET combines the spatial detail of PRISM climatologies with the daily temporal attributes of the North American Land
+Data Assimilation System (NLDAS-2)~\cite{mitchell2004nldas} to give daily surface meteorology on a
+$1/24^\circ$ (about 4\,km) grid~\cite{abatzoglou2013}. Our files cover 25.07--49.40\,$^\circ$N and 124.77--67.06\,$^\circ$W
+with $585\times1386$ cells, of which 483,879 (59.7\,\%) are land cells inside the CONUS mask. Wind speed and direction in gridMET
+come from NLDAS-2 at about 1/8$^\circ$ and are interpolated to the 4\,km grid,
+so wind is smoother than temperature or precipitation. Every value is a \emph{daily} aggregate: a daily mean
+for wind and VPD, a daily maximum for temperature and humidity, and a daily total for precipitation. The global attributes state that a gridMET day
+ends at midnight MST (07~UTC of the next calendar day). This matters for timing a hurricane landfall
+(Sec.~\ref{sec:dates}).
+
+\subsection{Choice of the eight time instances}
+\label{sec:dates}
+The assignment allows uniform or random sampling of 5--10 instances. We use a \emph{hybrid} rule so that the dates are
+both spread over the season and centred on interpretable events. Each candidate event was first checked in the
+data, not assumed. For every day we computed (Fig.~\ref{fig:01}, \fpath{daily_evidence.csv}):
+\begin{itemize}
+\item the CONUS maximum of $\Tmax$, and the share of western-US land (31--49.4\,$^\circ$N, 124.8--104\,$^\circ$W) with
+  $\Tmax\ge40$\,\degC;
+\item the area-mean precipitation and the maximum daily-mean wind in four landfall boxes. The boxes are TX coast
+  (27--32\,$^\circ$N, 97.8--93.5\,$^\circ$W), FL--GA--SC (26--34\,$^\circ$N, 84--78.5\,$^\circ$W), Louisiana
+  (28.8--33\,$^\circ$N, 93.8--88.5\,$^\circ$W) and Southeast (29--37\,$^\circ$N, 86--80\,$^\circ$W);
+\item the CONUS maximum and 99th percentile of wind speed.
+\end{itemize}
+The rule takes \textbf{six event anchors}, each the seasonal maximum of its indicator. To these it adds \textbf{two
+fillers} that split the only long event-free gap (5~Aug--11~Sep, 37 days) into thirds. Consecutive dates are therefore
+12--16 days apart, close to uniform sampling (92/8 = 11.5 days). The one exception is the deliberate Helene
+landfall/inland pair, which lets S3 show the storm moving. Table~\ref{tab:dates} lists the dates and their evidence. All
+three SciVis tasks use the same dates (D1--D8) so that results can be compared across tasks.
+
+\figfull{Fig_01_date_selection_timeline.png}{Daily evidence used to choose the eight analysis dates (vertical lines,
+labelled D1--D8), gridMET 1~Jul--30~Sep 2024. (a) Hottest CONUS cell (solid) and share of western land with
+$\Tmax\ge40$\,\degC{} (dashed). (b) Area-mean daily precipitation in four landfall boxes. (c) Maximum daily-mean 10\,m wind
+in the same boxes. (d) CONUS maximum and 99th percentile of daily-mean wind.}{fig:01}
+
+\input{generated/tab_dates}
+
+\textbf{Inferences from Fig.~\ref{fig:01}.}
+(i) The heat wave is the dominant July signal. The hottest CONUS cell stays above 52.5\,\degC{} from 4 to 12~July and peaks at
+53.85\,\degC{} on 6~July at 36.48\,$^\circ$N, 116.89\,$^\circ$W (Death Valley). The western area above 40\,\degC{} peaks
+twice, at about 12--13\,\% around 6--11~July and at 13.6\,\% on 24~July (D2), so D2 is the date with the most
+\emph{widespread} heat, not the hottest single cell.
+(ii) Each hurricane box has exactly one dominant rain spike, and it matches the landfall date: Texas 40.0\,mm on 8~July (Beryl),
+FL--GA--SC 60.1\,mm on 5~August (Debby), Louisiana 54.4\,mm on 11~September (Francine) and the Southeast 93.5\,mm on
+26~September (Helene). Helene's area-mean rain is 1.6 times Debby's and covers the largest box. This matches its reported
+catastrophic inland rainfall~\cite{nhc_tcr}.
+(iii) Daily averaging damps hurricane winds strongly. The highest daily-mean wind of the whole season (16.1\,m/s) occurs
+both on 26~September in Florida (Helene) and on 18~September over Wyoming (42.69\,$^\circ$N, 106.06\,$^\circ$W, a
+non-tropical mountain-wind event). Only Helene lifts the CONUS 99th percentile above 10\,m/s. Hurricane winds in gridMET
+are therefore an order of magnitude below reported peak gusts; we interpret the S3 wind fields as storm-scale circulation,
+not as damaging-wind maps.
+(iv) Late September is clearly cooler. The CONUS maximum stays at or below 42.6\,\degC{} from 12 to 22~September (minimum 38.2\,\degC{} on 16~September) and the western area
+$\ge40$\,\degC{} drops to 0\,\%, so the season moves from heat-dominated in July to storm-dominated in September. This
+contrast drives the global-vs-local normalisation discussion in S1.
+(v) Day boundaries matter. Helene made landfall as a Category~4 hurricane about 10~miles west-southwest of Perry,
+Florida, at 03:10~UTC on 27~September (11:10~pm EDT on the 26th)~\cite{nhc_tcr},
+which falls inside gridMET day 26~September. That is why D7 has the landfall rain and wind maximum while D8 shows the inland
+decay.
+
+\subsection{The A1 dataset}
+The A1 table merges 50 CSVs (871--1,000 posts each) with 19 columns. A1 established, and we re-checked, several facts.
+There are no duplicate ids. Timestamps use two formats (48,279 ISO, 987 \texttt{M/D/YYYY H:MM} in AskReddit). Coverage
+is strongly skewed in time: 2011--2015 contribute only 778 posts, while 2020 alone contributes 11,493, because the
+corpus is the all-time top tail and recent years have had less time to accumulate votes. Five columns are uninformative
+or almost empty and are dropped (Sec.~\ref{sec:a1clean}).

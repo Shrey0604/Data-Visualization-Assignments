@@ -1,0 +1,7 @@
+community,nodes,subreddits,domains,strength,top_subreddits,top_domains
+C0,400,9,391,13719,worldnews; technology; news; Futurology; UpliftingNews; nottheonion,theguardian.com; cnn.com; businessinsider.com; wikipedia.org; independent.co.uk; cnbc.com; bbc.com; nbcnews.com
+C1,45,21,24,10109,DIY; gifs; sports; gaming; interestingasfuck; creepy,imgur.com; gfycat.com; giphy.com; staticflickr.com; artstation.com; espn.com; deviantart.net; flickr.com
+C2,42,4,38,7145,videos; Documentaries; listentothis; Music,youtube.com; streamable.com; vimeo.com; tmz.com; rollingstone.com; soundcloud.com; nme.com; pbs.org
+C3,60,2,58,2766,television; movies,variety.com; hollywoodreporter.com; deadline.com; forbes.com; avclub.com; thewrap.com; ew.com; indiewire.com
+C4,75,1,74,1553,science,psypost.org; inverse.com; eurekalert.org; newscientist.com; academictimes.com; nature.com; sciencemag.org; upi.com
+C5,49,6,43,1198,space; InternetIsBeautiful; anime; tifu; askscience; IAmA,twitter.com; astronomy.com; github.io; nasa.gov; twimg.com; natalie.mu; space.com; neal.fun

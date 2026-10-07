@@ -1,0 +1,34 @@
+[
+ {
+  "key": "h1_topic",
+  "levels": [
+   "category",
+   "subreddit",
+   "post_type"
+  ],
+  "title": "All posts by topic",
+  "leaves": 135
+ },
+ {
+  "key": "h2_media",
+  "levels": [
+   "post_type",
+   "domain_class",
+   "category",
+   "subreddit"
+  ],
+  "title": "All posts by media",
+  "leaves": 250
+ },
+ {
+  "key": "h3_time",
+  "levels": [
+   "era",
+   "year",
+   "category",
+   "subreddit"
+  ],
+  "title": "All posts by time",
+  "leaves": 486
+ }
+]

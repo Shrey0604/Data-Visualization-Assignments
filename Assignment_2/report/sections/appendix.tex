@@ -1,0 +1,49 @@
+% ============================================================================================
+\section{Figure index}
+\label{app:figindex}
+Table~\ref{tab:figindex} maps every report figure to its high-resolution file in \fpath{images/}: PNG at 300\,dpi, browser
+screenshots at 2$\times$ device scale. GIFs share the number of their multi-panel still. Every file in \fpath{images/}
+appears in the report; no extra figures were left out.
+\input{generated/tab_figindex}
+
+\section{Gephi screenshots}
+\label{app:gephi}
+The GEXF files in \fpath{infovis/i1_network/gexf/} reproduce the network in Gephi, following the README, Sec.~5. Figures
+\ref{fig:43}--\ref{fig:45} are reserved for the team's Gephi exports. They are included automatically once the files exist.
+
+\newcommand{\gephislot}[3]{%
+\begin{figure*}[!t]\centering
+\IfFileExists{../images/#1}{\includegraphics[width=0.9\textwidth]{#1}}{%
+\fbox{\parbox[c][5cm][c]{0.85\textwidth}{\centering Placeholder: export from Gephi and save as \fpath{images/#1}\\
+(see README Sec.~5). This box is replaced automatically on recompilation.}}}
+\caption{#2}\label{#3}\end{figure*}}
+\gephislot{Fig_43_gephi_forceatlas2.png}{Gephi ForceAtlas2 layout of the subreddit--domain network (colour = Louvain
+community, size = strength).}{fig:43}
+\gephislot{Fig_44_gephi_fruchterman_reingold.png}{Gephi Fruchterman--Reingold layout of the same network.}{fig:44}
+\gephislot{Fig_45_gephi_yifanhu.png}{Gephi Yifan Hu layout of the same network.}{fig:45}
+
+\section{Key code listings}
+\label{app:code}
+The excerpts below are extracted automatically from the code base (\fpath{report/build_report_assets.py}).
+
+\noindent\textbf{Wind decomposition} (\fpath{scivis/common/load_gridmet.py}):
+\lstinputlisting[language=Python]{generated/code_wind.py}
+\textbf{Marching Squares} (\fpath{scivis/s2_contours/marching_squares.py}):
+\lstinputlisting[language=Python]{generated/code_ms.py}
+\textbf{Mask-aware Gaussian smoothing} (\fpath{scivis/s2_contours/run.py}):
+\lstinputlisting[language=Python]{generated/code_gauss.py}
+\textbf{Vector block averaging} (\fpath{scivis/s3_quiver_streamlines/run.py}):
+\lstinputlisting[language=Python]{generated/code_block.py}
+\textbf{Parallel-coordinates bundling} (\fpath{infovis/i2_web/parcoords/parcoords.js}):
+\lstinputlisting[language=Java]{generated/code_bundle.js}
+\textbf{Zoomable-treemap tiling} (\fpath{infovis/i2_web/treemap/treemap.js}):
+\lstinputlisting[language=Java]{generated/code_tile.js}
+\textbf{Horizon band folding} (\fpath{infovis/i3_horizon_ridgeline/run.py}):
+\lstinputlisting[language=Python]{generated/code_horizon.py}
+\textbf{Tabular-to-tree remodel} (\fpath{infovis/common/a1_preprocess.py}):
+\lstinputlisting[language=Python]{generated/code_tree.py}
+
+\section{Full preprocessing log}
+\label{app:log}
+Reproduced from \fpath{notes/preprocessing_log.md}, with non-ASCII symbols transliterated.
+\lstinputlisting[numbers=none,basicstyle=\ttfamily\tiny]{generated/preprocessing_log.txt}

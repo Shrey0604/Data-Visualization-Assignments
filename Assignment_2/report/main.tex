@@ -1,0 +1,107 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% DAS732 A2 report - Team Silica. Build: python build_report_assets.py && latexmk -pdf main.tex
+\usepackage[utf8]{inputenc}
+\DeclareUnicodeCharacter{221D}{\ensuremath{\propto}}
+\DeclareUnicodeCharacter{2074}{\textsuperscript{4}}
+\usepackage{cite}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage[caption=false,font=footnotesize]{subfig}
+\usepackage{booktabs}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{listings}
+\usepackage{xcolor}
+% siunitx clashes with the local MiKTeX kernel; minimal replacements:
+\newcommand{\celsius}{\ensuremath{^\circ}C}
+\newcommand{\degree}{\ensuremath{^\circ}}
+\newcommand{\si}[1]{#1}
+\usepackage{url}
+\usepackage{array}
+\usepackage{adjustbox}
+\usepackage[hidelinks]{hyperref}
+\graphicspath{{../images/}}
+
+% float handling: many full-width figures
+\extrafloats{250}
+\renewcommand{\topfraction}{0.95}
+\renewcommand{\dbltopfraction}{0.95}
+\renewcommand{\bottomfraction}{0.6}
+\renewcommand{\textfraction}{0.05}
+\renewcommand{\floatpagefraction}{0.75}
+\renewcommand{\dblfloatpagefraction}{0.75}
+\setcounter{topnumber}{4}
+\setcounter{dbltopnumber}{4}
+\setcounter{totalnumber}{6}
+
+\lstset{basicstyle=\ttfamily\scriptsize, breaklines=true, frame=single, columns=fullflexible,
+        keywordstyle=\color{blue!60!black}, commentstyle=\color{green!40!black}, showstringspaces=false,
+        numbers=left, numberstyle=\tiny\color{gray}, xleftmargin=1.5em}
+
+\newcommand{\figfull}[3]{\begin{figure*}[!t]\centering\includegraphics[width=\textwidth]{#1}\caption{#2}\label{#3}\end{figure*}}
+\newcommand{\figfullw}[4]{\begin{figure*}[!t]\centering\includegraphics[width=#4\textwidth]{#1}\caption{#2}\label{#3}\end{figure*}}
+% file paths: robust in captions and tables (\path is not allowed in moving arguments); breakable after / and _
+\makeatletter
+\def\fpath@brk#1{\ifx#1\@nil\else\ifx#1/\string/\allowbreak\else\ifx#1_\string_\allowbreak\else\string#1\fi\fi\expandafter\fpath@brk\fi}
+\DeclareRobustCommand{\fpath}[1]{\texttt{\expandafter\fpath@brk\detokenize{#1}\@nil}}
+\makeatother
+\newcommand{\Tmax}{T_{\max}}
+\newcommand{\degC}{\si{\celsius}}
+
+\begin{document}
+
+\title{Scientific and Information Visualization of gridMET Weather (July--September 2024) and Reddit Top Posts\\[0.2em]
+{\large DAS732 Data Visualization, Assignment~2 --- Team Silica}}
+
+\author{\IEEEauthorblockN{Sidhanth Prabhu}
+\IEEEauthorblockA{BT2024027\\IIIT Bangalore\\Bengaluru, India}
+\and
+\IEEEauthorblockN{Shrey Modi}
+\IEEEauthorblockA{BT2024125\\IIIT Bangalore\\Bengaluru, India}
+\and
+\IEEEauthorblockN{Parthsarati Samanta}
+\IEEEauthorblockA{BT2024083\\IIIT Bangalore\\Bengaluru, India}}
+
+\maketitle
+
+\begin{abstract}
+We apply six visualization techniques to two datasets. The scientific-visualization (SciVis) part uses daily 4\,km gridMET fields over the
+contiguous United States (CONUS) for 1~July--30~September~2024. We sample eight dates with a documented hybrid rule
+anchored on events that we verified in the data: the July western heat wave and Hurricanes Beryl, Debby, Francine and
+Helene. On these dates we study (S1) colour mapping of maximum temperature and precipitation: continuous vs.\ rainbow,
+discrete, logarithmic and diverging maps, and global vs.\ local normalisation. We study (S2) contour mapping of vapour pressure
+deficit with our own vectorised Marching Squares implementation. It resolves saddles with the asymptotic decider and matches
+\texttt{scikit-image} segment for segment (21,715 of 21,715 segments). We also compare it with filled contours. Finally we study
+(S3) quiver plots and streamlines of the 10\,m wind, covering grid sampling, aliasing, proportional vs.\ uniform arrows and three
+streamline seeding strategies. The information-visualization (InfoVis) part derives four new structures from our A1 dataset of
+49,266 all-time top posts of 50 subreddits. (I1) A 671-node bipartite subreddit--domain network is drawn with five
+layouts and compared on runtime, edge crossings and community separation, with filtering and an interactive version. (I2)
+D3.js parallel coordinates with cluster-based edge bundling, brushing and axis reordering, and a zoomable treemap with three
+hierarchy remodels and five tiling strategies. (I3) Hand-built horizon plots and ridgeline plots at several groupings and
+granularities. Every figure comes with data-grounded inferences, and a cross-task discussion relates heat, moisture and wind on
+the same dates.
+\end{abstract}
+
+\begin{IEEEkeywords}
+scientific visualization, colour mapping, marching squares, quiver plot, streamlines, gridMET, network layout, parallel
+coordinates, edge bundling, treemap, horizon graph, ridgeline plot
+\end{IEEEkeywords}
+
+\input{sections/intro}
+\input{sections/data}
+\input{sections/s1}
+\input{sections/s2}
+\input{sections/s3}
+\input{sections/i1}
+\input{sections/i2}
+\input{sections/i3}
+\input{sections/discussion}
+
+\appendices
+\input{sections/appendix}
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

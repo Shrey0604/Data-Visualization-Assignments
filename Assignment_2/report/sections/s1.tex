@@ -1,0 +1,186 @@
+% ============================================================================================
+\section{S1: Colour Mapping (Owner: Sidhanth Prabhu, BT2024027)}
+\label{sec:s1}
+\textbf{Method.} Every map is drawn on a Lambert conformal conic projection (standard parallels 33 and 45\,$^\circ$N), which
+preserves shape over CONUS. Natural Earth 1:50m state borders and coastlines are added with Cartopy~\cite{cartopy}. Each
+grid cell is rendered as an image pixel (nearest-neighbour, no smoothing), so the colour is the cell value and not an
+interpolation. Cells outside the land mask show a neutral blue-grey labelled ``No data'', which no data colour uses. The
+primary scalar is $\Tmax$; precipitation is the second scalar because its skewed distribution
+(Table~\ref{tab:global}: 71.3\,\% zeros, median 0, maximum 401\,mm) needs a different mapping. Script:
+\fpath{scivis/s1_colormapping/run.py}.
+
+\subsection{Continuous colour maps and perceptual uniformity}
+Fig.~\ref{fig:02} shows the same field (D2, 24~July, linear 5.1--51.0\,\degC) with four palettes. Fig.~\ref{fig:03} and
+Table~\ref{tab:lightness} measure the CIELAB lightness $L^*$ of each palette~\cite{borland2007,crameri2020}.
+
+\figfull{Fig_02_tmmx_continuous_colormaps.png}{Continuous colour maps of $\Tmax$ on D2 (24~Jul~2024, western heat-wave
+peak), identical linear normalisation (5.1--51.0\,\degC). (a) jet, a rainbow baseline; (b) viridis; (c) inferno; (d)
+cividis, which is optimised for colour-vision deficiency~\cite{nunez2018}.}{fig:02}
+
+\figfull{Fig_03_colormap_lightness_profiles.png}{(a) CIELAB lightness $L^*$ along each colour map used in S1. (b) Each
+map as a colour strip (top) and as its lightness only (bottom), i.e.\ how it reads in greyscale.}{fig:03}
+
+\input{generated/tab_s1_lightness}
+
+\textbf{Inferences.}
+(1) The palette alone changes what appears to be structure. In jet (Fig.~\ref{fig:02}a) a sharp cyan$\rightarrow$yellow
+``front'' crosses the Midwest at about 28--30\,\degC, and a second sharp edge appears at about 38\,\degC{} in the Plains.
+Neither is a physical discontinuity; the temperature changes smoothly there. They are hue boundaries at jet's bright
+band, where $L^*$ jumps from about 60 to 95 within 10\,\% of the range (Fig.~\ref{fig:03}a).
+(2) jet hides the hottest cells. Its lightness \emph{falls} to 25 at the top end, so the 45--51\,\degC{} Central Valley,
+lower Colorado River and Death Valley cells are dark red and look \emph{less} salient than the 38--42\,\degC{}
+Montana--Dakota hot spot in yellow-orange. In greyscale (Fig.~\ref{fig:03}b), jet's coldest and hottest values both appear
+dark.
+(3) viridis, inferno and cividis have monotone $L^*$ (0 turns). inferno has the largest range ($L^*$ 0.1--97.9), so it
+separates the most steps. In Fig.~\ref{fig:02}c the cool Rockies ridges (10--20\,\degC), the cool Pacific coast
+(15--20\,\degC), the warm Great Lakes and New England (22--27\,\degC) and the northern-Plains heat dome (38--42\,\degC) are
+all readable at once. We therefore use inferno as the default $\Tmax$ map in the rest of S1.
+(4) viridis and cividis compress the 25--35\,\degC{} bulk of the East into a narrow teal or grey band. That is honest but
+gives low contrast exactly where most land cells lie (the median is 31.7\,\degC{} on D2). This is the inherent cost of a
+uniform ramp over a long-tailed range.
+(5) turbo improves on jet's darkening at the low end but still turns in lightness (1 turn), so the same caveats apply.
+Rainbow maps are only acceptable for categorical reading, not for judging magnitude.
+
+\subsection{Discrete (quantised) colour maps}
+Fig.~\ref{fig:04} compares the continuous inferno map with two \texttt{BoundaryNorm} classifications. One uses
+\emph{equal-interval} 5\,\degC{} classes; the other uses \emph{quantile} classes, the deciles of the day's land cells. The
+histograms below each map show where the breaks fall.
+
+\figfull{Fig_04_tmmx_discrete_equal_vs_quantile.png}{Continuous vs.\ discrete colour mapping of $\Tmax$ on D2. (a)
+Continuous; (b) ten equal 5\,\degC{} classes; (c) ten quantile (decile) classes; (d--f) land-cell histograms with the class
+breaks and the share of land per class.}{fig:04}
+
+\textbf{Inferences.}
+(1) Equal-interval classes are interpretable: each boundary is an isotherm (e.g.\ the 35\,\degC{} line), so the map can be
+read like a contour map. But land is spread very unevenly across classes, from 0.0\,\% to 42.7\,\% per class
+(Fig.~\ref{fig:04}e). The 30--35\,\degC{} class alone covers most of the East and Southeast, which become one flat colour.
+(2) Quantile classes equalise area by construction (8.9--10.8\,\% per class) and maximise contrast. However, the breaks
+(24.6, 26.9, 28.6, 30.2, 31.6, 32.7, 33.7, 34.8, 37.3\,\degC) are only 1--3\,\degC{} apart in the middle and about
+20\,\degC{} apart at the ends. The map therefore exaggerates differences of 1\,\degC{} across the Plains and Southeast, while
+treating a 37\,\degC{} Kansas cell and a 51\,\degC{} Death Valley cell as the same class.
+(3) The histogram (Fig.~\ref{fig:04}d) is skewed. A main mode at 31--34\,\degC{} (the humid East and South) has a cool
+shoulder at about 25\,\degC{} (the Pacific Northwest, Great Lakes and mountains) and a hot tail of 40--51\,\degC{} (the
+desert Southwest and the northern-Plains heat dome). Any classification has to choose which of these to resolve.
+(4) Our recommendation: equal intervals when values must be compared with physical thresholds or across dates; quantiles
+when the task is ranking regions within one map; continuous when exact gradients matter and the reader can use a colour
+bar.
+
+\subsection{Logarithmic mapping of precipitation}
+Fig.~\ref{fig:05} maps precipitation on the two heaviest landfall days with a linear map scaled to the daily maximum, a
+linear map clipped at 25\,mm, and a \texttt{LogNorm} over 0.1--401\,mm. Zeros cannot be log-scaled. Rather than adding an
+arbitrary $\epsilon$, we draw dry land ($p=0$) as a separate cream ``dry'' category beneath the colour layer, so ``no
+rain'' and ``0.1\,mm drizzle'' are never confused.
+
+\figfull{Fig_05_pr_linear_vs_log.png}{Precipitation with linear vs.\ logarithmic colour mapping on D3 (Debby, top) and D7
+(Helene, bottom). Left: linear 0--(day maximum); middle: linear clipped at 25\,mm (the extend arrow marks saturation);
+right: LogNorm 0.1--401\,mm with zeros shown in cream.}{fig:05}
+
+\textbf{Inferences.}
+(1) On D3 a linear map scaled to the 331\,mm maximum shows only Debby's swath along the Florida Gulf coast and the
+Georgia--South Carolina coastal plain, where totals exceed 150\,mm. Everything else looks dry, even though 32.3\,\% of land
+is wet: the median wet cell receives 3.5\,mm, about 1\,\% of the colour range.
+(2) Clipping at 25\,mm reveals a second, frontal rain band across the Dakotas, Minnesota, Wisconsin and Michigan and into
+New England. But the hurricane core saturates, so 30\,mm and 300\,mm look identical. Clipping trades one blind spot for
+another.
+(3) The log map shows both at once: Debby's core (more than 100\,mm), the frontal band (5--30\,mm), and monsoon
+showers of 0.3--5\,mm over Colorado, New Mexico, Utah and Arizona that are invisible in both linear versions.
+(4) On D7 the log map separates Helene's core (more than 100\,mm, a SW--NE stripe over Georgia, the Carolinas and the
+southern Appalachians) from a broad 10--30\,mm shield over Alabama, Tennessee and Kentucky. It also shows unrelated rain in
+Washington state and New England. Only 23.4\,\% of land is wet on D7, but the median wet cell receives 12.6\,mm, much more
+than on D3, because the rain is concentrated in one organised system.
+(5) The limitation: equal colour steps now mean equal \emph{ratios}, so a reader must not judge differences linearly.
+Going from 1 to 10\,mm is as large a colour step as going from 30 to 300\,mm.
+
+\subsection{Sequential vs.\ diverging maps on the anomaly}
+Fig.~\ref{fig:06} maps the $\Tmax$ anomaly of Eq.~\eqref{eq:anom} on D2 and D7 with two diverging maps (RdBu\_r and coolwarm
+with \texttt{TwoSlopeNorm} centred at 0, limits $\pm15$\,\degC) and with sequential viridis stretched min--max.
+
+\figfull{Fig_06_tmmx_anomaly_diverging.png}{Daily $\Tmax$ anomaly relative to each cell's Jul--Sep 2024 mean on D2 (top)
+and D7 (bottom). (a, d) RdBu\_r and (b, e) coolwarm, both centred at 0 with a two-slope norm; (c, f) sequential viridis
+with min--max scaling, where the black tick on the colour bar marks 0.}{fig:06}
+
+\textbf{Inferences.}
+(1) D2 is anomalously warm over 69.3\,\% of land (mean $+2.05$\,\degC). Montana, northern Wyoming and the western
+Dakotas reach $+10$ to $+15$\,\degC, which is the core of the late-July heat dome. The Great Basin and Pacific Northwest
+run $+3$ to $+8$\,\degC.
+(2) On the same day a cool band of $-3$ to $-8$\,\degC{} runs from south Texas through Louisiana and Mississippi into
+Tennessee. This is the rain-cooled Gulf moisture plume that also appears in Fig.~\ref{fig:09}b. The diverging map shows that
+these two regions have opposite \emph{signs}, which a sequential map cannot convey.
+(3) D7 reverses the picture: only 22.1\,\% of land is warmer than usual (mean $-2.48$\,\degC), and 20.0\,\% is more than
+5\,\degC{} colder. The strongest cold anomaly ($-10$ to $-13$\,\degC) is a narrow north--south band over Alabama, Georgia
+and Tennessee directly under Helene's cloud and rain shield, while the northern Plains are $+5$ to $+8$\,\degC. So one
+event depresses daytime maximum temperature locally by as much as the whole seasonal cooling from July to September.
+(4) viridis has no visual zero. On D2 the value 0\,\degC{} falls on a dark teal, so a slightly warm and a slightly cool cell
+look alike, and ``yellow'' only says ``highest anomaly of this map''. Diverging maps are right when the data have a
+meaningful midpoint (an anomaly, a difference, a correlation). Sequential maps are right when the data are a magnitude
+with a natural zero, such as temperature, VPD or rain~\cite{moreland2009}.
+(5) RdBu\_r saturates more strongly than coolwarm. coolwarm's lighter extremes ($L^*\geq38$, Table~\ref{tab:lightness})
+keep state borders legible, at the price of weaker emphasis on the $\pm10$\,\degC{} extremes.
+
+\subsection{Global vs.\ local normalisation across timesteps}
+Figs.~\ref{fig:07} and \ref{fig:08} show $\Tmax$ on all eight dates. Fig.~\ref{fig:07} uses one \emph{global} colour range,
+the 92-day minimum and maximum ($-6.35$ to 53.85\,\degC). Fig.~\ref{fig:08} stretches each date to its own
+\emph{local} minimum and maximum. Fig.~\ref{fig:09} applies a global logarithmic range to precipitation.\footnote{Animated
+versions (8 frames, 1 frame/s, fixed colour-bar axis, date in the title):
+\fpath{images/Fig_07_tmmx_global_norm.gif}, \fpath{images/Fig_08_tmmx_local_norm.gif},
+\fpath{images/Fig_09_pr_global_log.gif}.} Table~\ref{tab:s1ranges} lists the local ranges.
+
+\figfull{Fig_07_tmmx_global_norm.png}{$\Tmax$ on the eight dates with \emph{global} normalisation: a single colour bar
+spanning the Jul--Sep 2024 minimum and maximum. All eight frames of the GIF \fpath{Fig_07_tmmx_global_norm.gif}.}{fig:07}
+
+\figfull{Fig_08_tmmx_local_norm.png}{$\Tmax$ on the eight dates with \emph{local} normalisation: each panel has its own
+colour bar from that day's minimum to maximum. All eight frames of the GIF \fpath{Fig_08_tmmx_local_norm.gif}.}{fig:08}
+
+\figfull{Fig_09_pr_global_log.png}{Precipitation on the eight dates with one global logarithmic range (0.1--401\,mm);
+dry land in cream. All eight frames of the GIF \fpath{Fig_09_pr_global_log.gif}.}{fig:09}
+
+\input{generated/tab_s1_ranges}
+
+\textbf{Inferences.}
+(1) With global normalisation the same colour means the same temperature on every date, so the seasonal trend is
+visible. D1 and D2 are the brightest frames (desert Southwest yellow, Plains orange). By D6--D8 the Pacific Northwest, the
+northern Rockies and New England are clearly darker. The CONUS-mean $\Tmax$ falls from 31.2\,\degC{} (D1, D2) to
+26.7--27.1\,\degC{} (D6--D8) (Table~\ref{tab:perdate}).
+(2) Event signatures are comparable across dates only under global scaling. The darker band over the Upper Midwest on D3
+(Debby day, frontal rain) and the dark patch over Alabama, Georgia and Tennessee on D7 and D8 (Helene) are recognisable
+as \emph{the same} 20--25\,\degC{} level.
+(3) The cost of global scaling is within-day contrast. The 60\,\degC{} global span means most land on any day falls into
+25--40\,\degC, which is only a quarter of the colour range.
+(4) Local normalisation uses the full palette every day (each local range is 64--80\,\% of the global range,
+Table~\ref{tab:s1ranges}), so within-day patterns are sharper. Examples are the Central Valley vs.\ the coast on D1, and
+the D5 contrast between the Southwest (above 45\,\degC) and the Pacific Northwest.
+(5) But local normalisation \emph{misleads} across dates. The coolest region of each day turns near-black whatever its
+actual value. D6's Rockies at $-2.7$\,\degC{} and D3's Upper Midwest at about 20\,\degC{} receive the same colour. The
+seasonal cooling disappears completely in the local version of the GIF, and any comparison requires reading eight
+colour bars.
+(6) For precipitation (Fig.~\ref{fig:09}) a global log scale is essential: a single range spans D4's quiet 100\,mm maximum
+and D7's 359\,mm. The panels tell the season's story directly. D1 shows Beryl's swath from the upper Texas coast through
+Arkansas and Missouri to Michigan. D2 shows Southwest monsoon storms. D3 shows Debby. D6 shows Francine's core over
+southern Louisiana and Mississippi. D7 and D8 show Helene's rain moving from Florida and Georgia onto the southern
+Appalachians.
+
+\subsection{Observations and limitations (S1)}
+\begin{table}[!t]
+\centering
+\caption{Colour-map comparison for $\Tmax$ (qualitative judgement, supported by Figs.~\ref{fig:02}--\ref{fig:06}).}
+\label{tab:cmapcomp}
+\footnotesize
+\begin{tabular}{p{1.4cm}p{1.2cm}p{2.2cm}p{2.3cm}}
+\toprule
+Map & Type & Strength & Weakness \\
+\midrule
+jet & rainbow & many hues & false fronts, dark top end, not CVD-safe \\
+viridis & sequential & uniform, CVD-safe & low contrast at mid range \\
+inferno & sequential & largest $L^*$ range & dark low end can hide cool mountains \\
+cividis & sequential & CVD-optimised & muted, greyish middle \\
+RdBu\_r & diverging & strong sign contrast & saturated extremes \\
+coolwarm & diverging & softer, borders legible & weaker extremes \\
+\bottomrule
+\end{tabular}
+\end{table}
+Table~\ref{tab:cmapcomp} summarises the palettes. The main lessons are: use perceptually uniform maps for magnitude;
+use diverging maps only around a meaningful centre; use a log scale for multiplicative, zero-inflated quantities such as
+rain; and use global normalisation whenever the reader compares timesteps. Local normalisation is acceptable only with a
+colour bar per panel and only for within-day questions. A limitation is that gridMET $\Tmax$ is a daily maximum on a 4\,km
+grid, so urban heat islands and sub-grid cold-air pools are not resolved. Also, the anomaly baseline is a single season,
+not a multi-decade climatology, so ``anomalous'' here means ``unusual for summer 2024''.

@@ -1,0 +1,204 @@
+====================================================================================================
+tmmx_2024.nc (151.3 MB)
+<xarray.Dataset> Size: 594MB
+Dimensions:          (day: 366, lat: 585, lon: 1386, crs: 1)
+Coordinates:
+  * day              (day) float64 3kB 4.529e+04 4.529e+04 ... 4.566e+04
+  * lat              (lat) float64 5kB 49.4 49.36 49.32 ... 25.15 25.11 25.07
+  * lon              (lon) float64 11kB -124.8 -124.7 -124.7 ... -67.1 -67.06
+Data variables:
+    air_temperature  (day, lat, lon) uint16 594MB ...
+Attributes: (12/19)
+    date:                       03 March 2025
+-- data var 'air_temperature' attrs:
+     _FillValue: 32767
+     units: K
+     description: Daily Maximum Temperature (2m)
+     long_name: tmmx
+     standard_name: tmmx
+     missing_value: 32767
+     dimensions: lon lat time
+     grid_mapping: crs
+     coordinate_system: WGS84,EPSG:4326
+     scale_factor: 0.1
+     add_offset: 220.0
+     _Unsigned: true
+     encoding: {'dtype': dtype('uint16'), 'zlib': True, 'chunksizes': (61, 98, 231), '_FillValue': None, 'scale_factor': None, 'add_offset': None}
+-- coord day: n=366, first=[45290. 45291. 45292.], last=[45653. 45654. 45655.], attrs={'description': 'days since 1900-01-01', 'units': 'days since 1900-01-01 00:00:00', 'long_name': 'time', 'standard_name': 'time', 'calendar': 'gregorian'}
+   lat ordering: DESCENDING; dlat=-0.041667, dlon=0.041667
+-- decoded time range: 2024-01-01T00:00:00.000000000 -> 2024-12-31T00:00:00.000000000 n = 366
+====================================================================================================
+pr_2024.nc (60.4 MB)
+<xarray.Dataset> Size: 594MB
+Dimensions:               (day: 366, lat: 585, lon: 1386, crs: 1)
+Coordinates:
+  * day                   (day) float64 3kB 4.529e+04 4.529e+04 ... 4.566e+04
+  * lat                   (lat) float64 5kB 49.4 49.36 49.32 ... 25.11 25.07
+  * lon                   (lon) float64 11kB -124.8 -124.7 ... -67.1 -67.06
+Data variables:
+    precipitation_amount  (day, lat, lon) uint16 594MB ...
+Attributes: (12/19)
+    date:                       03 March 2025
+-- data var 'precipitation_amount' attrs:
+     _FillValue: 32767
+     units: mm
+     description: Daily Accumulated Precipitation
+     long_name: pr
+     standard_name: pr
+     missing_value: 32767
+     dimensions: lon lat time
+     grid_mapping: crs
+     coordinate_system: WGS84,EPSG:4326
+     scale_factor: 0.1
+     add_offset: 0.0
+     _Unsigned: true
+     encoding: {'dtype': dtype('uint16'), 'zlib': True, 'chunksizes': (61, 98, 231), '_FillValue': None, 'scale_factor': None, 'add_offset': None}
+-- coord day: n=366, first=[45290. 45291. 45292.], last=[45653. 45654. 45655.], attrs={'description': 'days since 1900-01-01', 'units': 'days since 1900-01-01 00:00:00', 'long_name': 'time', 'standard_name': 'time', 'calendar': 'gregorian'}
+   lat ordering: DESCENDING; dlat=-0.041667, dlon=0.041667
+-- decoded time range: 2024-01-01T00:00:00.000000000 -> 2024-12-31T00:00:00.000000000 n = 366
+====================================================================================================
+vpd_2024.nc (137.4 MB)
+<xarray.Dataset> Size: 594MB
+Dimensions:                      (day: 366, lat: 585, lon: 1386, crs: 1)
+Coordinates:
+  * day                          (day) float64 3kB 4.529e+04 ... 4.566e+04
+  * lat                          (lat) float64 5kB 49.4 49.36 ... 25.11 25.07
+  * lon                          (lon) float64 11kB -124.8 -124.7 ... -67.06
+Data variables:
+    mean_vapor_pressure_deficit  (day, lat, lon) uint16 594MB ...
+Attributes: (12/19)
+    date:                       03 March 2025
+-- data var 'mean_vapor_pressure_deficit' attrs:
+     _FillValue: 32767
+     units: kPa
+     description: mean vapor presure deficit
+     long_name: vpd
+     standard_name: vpd
+     missing_value: 32767
+     dimensions: lon lat time
+     grid_mapping: crs
+     coordinate_system: WGS84,EPSG:4326
+     scale_factor: 0.01
+     add_offset: 0.0
+     _Unsigned: true
+     encoding: {'dtype': dtype('uint16'), 'zlib': True, 'chunksizes': (61, 98, 231), '_FillValue': None, 'scale_factor': None, 'add_offset': None}
+-- coord day: n=366, first=[45290. 45291. 45292.], last=[45653. 45654. 45655.], attrs={'description': 'days since 1900-01-01', 'units': 'days since 1900-01-01 00:00:00', 'long_name': 'time', 'standard_name': 'time', 'calendar': 'gregorian'}
+   lat ordering: DESCENDING; dlat=-0.041667, dlon=0.041667
+-- decoded time range: 2024-01-01T00:00:00.000000000 -> 2024-12-31T00:00:00.000000000 n = 366
+====================================================================================================
+rmax_2024.nc (176.6 MB)
+<xarray.Dataset> Size: 594MB
+Dimensions:            (day: 366, lat: 585, lon: 1386, crs: 1)
+Coordinates:
+  * day                (day) float64 3kB 4.529e+04 4.529e+04 ... 4.566e+04
+  * lat                (lat) float64 5kB 49.4 49.36 49.32 ... 25.15 25.11 25.07
+  * lon                (lon) float64 11kB -124.8 -124.7 -124.7 ... -67.1 -67.06
+Data variables:
+    relative_humidity  (day, lat, lon) uint16 594MB ...
+Attributes: (12/19)
+    date:                       03 March 2025
+-- data var 'relative_humidity' attrs:
+     _FillValue: 32767
+     units: %
+     description: Daily Maximum Relative Humidity (2m)
+     long_name: rmax
+     standard_name: rmax
+     missing_value: 32767
+     dimensions: lon lat time
+     grid_mapping: crs
+     coordinate_system: WGS84,EPSG:4326
+     scale_factor: 0.1
+     add_offset: 0.0
+     _Unsigned: true
+     encoding: {'dtype': dtype('uint16'), 'zlib': True, 'chunksizes': (61, 98, 231), '_FillValue': None, 'scale_factor': None, 'add_offset': None}
+-- coord day: n=366, first=[45290. 45291. 45292.], last=[45653. 45654. 45655.], attrs={'description': 'days since 1900-01-01', 'units': 'days since 1900-01-01 00:00:00', 'long_name': 'time', 'standard_name': 'time', 'calendar': 'gregorian'}
+   lat ordering: DESCENDING; dlat=-0.041667, dlon=0.041667
+-- decoded time range: 2024-01-01T00:00:00.000000000 -> 2024-12-31T00:00:00.000000000 n = 366
+====================================================================================================
+srad_2024.nc (204.8 MB)
+<xarray.Dataset> Size: 594MB
+Dimensions:                                    (day: 366, lat: 585, lon: 1386,
+                                                crs: 1)
+Coordinates:
+  * day                                        (day) float64 3kB 4.529e+04 .....
+  * lat                                        (lat) float64 5kB 49.4 ... 25.07
+  * lon                                        (lon) float64 11kB -124.8 ... ...
+Data variables:
+    surface_downwelling_shortwave_flux_in_air  (day, lat, lon) uint16 594MB ...
+Attributes: (12/19)
+    date:                       03 March 2025
+-- data var 'surface_downwelling_shortwave_flux_in_air' attrs:
+     _FillValue: 32767
+     units: W m-2
+     description: Daily Mean downward shortwave radiation at surface
+     long_name: srad
+     standard_name: srad
+     missing_value: 32767
+     dimensions: lon lat time
+     grid_mapping: crs
+     coordinate_system: WGS84,EPSG:4326
+     scale_factor: 0.1
+     add_offset: 0.0
+     _Unsigned: true
+     encoding: {'dtype': dtype('uint16'), 'zlib': True, 'chunksizes': (61, 98, 231), '_FillValue': None, 'scale_factor': None, 'add_offset': None}
+-- coord day: n=366, first=[45290. 45291. 45292.], last=[45653. 45654. 45655.], attrs={'description': 'days since 1900-01-01', 'units': 'days since 1900-01-01 00:00:00', 'long_name': 'time', 'standard_name': 'time', 'calendar': 'gregorian'}
+   lat ordering: DESCENDING; dlat=-0.041667, dlon=0.041667
+-- decoded time range: 2024-01-01T00:00:00.000000000 -> 2024-12-31T00:00:00.000000000 n = 366
+====================================================================================================
+vs_2024.nc (60.5 MB)
+<xarray.Dataset> Size: 594MB
+Dimensions:     (day: 366, lat: 585, lon: 1386, crs: 1)
+Coordinates:
+  * day         (day) float64 3kB 4.529e+04 4.529e+04 ... 4.565e+04 4.566e+04
+  * lat         (lat) float64 5kB 49.4 49.36 49.32 49.28 ... 25.15 25.11 25.07
+  * lon         (lon) float64 11kB -124.8 -124.7 -124.7 ... -67.14 -67.1 -67.06
+Data variables:
+    wind_speed  (day, lat, lon) uint16 594MB ...
+Attributes: (12/19)
+    date:                       03 March 2025
+-- data var 'wind_speed' attrs:
+     _FillValue: 32767
+     units: m/s
+     description: Daily Mean Wind Speed (10m)
+     long_name: vs
+     standard_name: vs
+     missing_value: 32767
+     dimensions: lon lat time
+     grid_mapping: crs
+     coordinate_system: WGS84,EPSG:4326
+     scale_factor: 0.1
+     add_offset: 0.0
+     _Unsigned: true
+     encoding: {'dtype': dtype('uint16'), 'zlib': True, 'chunksizes': (61, 98, 231), '_FillValue': None, 'scale_factor': None, 'add_offset': None}
+-- coord day: n=366, first=[45290. 45291. 45292.], last=[45653. 45654. 45655.], attrs={'description': 'days since 1900-01-01', 'units': 'days since 1900-01-01 00:00:00', 'long_name': 'time', 'standard_name': 'time', 'calendar': 'gregorian'}
+   lat ordering: DESCENDING; dlat=-0.041667, dlon=0.041667
+-- decoded time range: 2024-01-01T00:00:00.000000000 -> 2024-12-31T00:00:00.000000000 n = 366
+====================================================================================================
+th_2024.nc (28.2 MB)
+<xarray.Dataset> Size: 594MB
+Dimensions:              (day: 366, lat: 585, lon: 1386, crs: 1)
+Coordinates:
+  * day                  (day) float64 3kB 4.529e+04 4.529e+04 ... 4.566e+04
+  * lat                  (lat) float64 5kB 49.4 49.36 49.32 ... 25.11 25.07
+  * lon                  (lon) float64 11kB -124.8 -124.7 ... -67.1 -67.06
+Data variables:
+    wind_from_direction  (day, lat, lon) uint16 594MB ...
+Attributes: (12/19)
+    date:                       03 March 2025
+-- data var 'wind_from_direction' attrs:
+     _FillValue: 32767
+     units: Degrees Clockwise from north
+     description: Daily mean wind direction (10m)
+     long_name: th
+     standard_name: th
+     missing_value: 32767
+     dimensions: lon lat time
+     grid_mapping: crs
+     coordinate_system: WGS84,EPSG:4326
+     scale_factor: 1.0
+     add_offset: 0.0
+     _Unsigned: true
+     encoding: {'dtype': dtype('uint16'), 'zlib': True, 'chunksizes': (61, 98, 231), '_FillValue': None, 'scale_factor': None, 'add_offset': None}
+-- coord day: n=366, first=[45290. 45291. 45292.], last=[45653. 45654. 45655.], attrs={'description': 'days since 1900-01-01', 'units': 'days since 1900-01-01 00:00:00', 'long_name': 'time', 'standard_name': 'time', 'calendar': 'gregorian'}
+   lat ordering: DESCENDING; dlat=-0.041667, dlon=0.041667
+-- decoded time range: 2024-01-01T00:00:00.000000000 -> 2024-12-31T00:00:00.000000000 n = 366

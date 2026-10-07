@@ -1,0 +1,144 @@
+% ============================================================================================
+\section{I1: Node-Link Diagram (Owner: Sidhanth Prabhu, BT2024027)}
+\label{sec:i1}
+\textbf{Graph.} The graph is the bipartite subreddit--domain network of Sec.~\ref{sec:derive}: 671 nodes and 2,350 weighted
+edges. Communities come from Louvain modularity maximisation~\cite{blondel2008} (NetworkX, weighted, resolution 1, seed 42).
+In every drawing the encoding is identical: \emph{size} $\propto\sqrt{\text{strength}}$ (weighted degree = number of top
+posts), \emph{colour} = Louvain community, \emph{shape} = node type (square subreddit, circle domain), edge width
+$\propto\sqrt{w}$ and edge opacity 0.12. Labels are placed with \texttt{adjustText} to avoid overlaps. Script:
+\fpath{infovis/i1_network/run.py}.
+
+\subsection{Network structure}
+\figfull{Fig_25_network_statistics.png}{(a) Complementary cumulative degree distribution of the two node types (log--log);
+(b) edge-weight histogram; (c) Louvain community sizes split into domains and subreddits (number = subreddits).}{fig:25}
+\input{generated/tab_graph}
+\input{generated/tab_communities}
+
+\textbf{Inferences.}
+(1) The degree distributions of the two node types differ completely (Fig.~\ref{fig:25}a). Domains have mean degree 3.7,
+17.8\,\% of them are linked from a single subreddit, and no domain is linked from more than 27 subreddits. Subreddits have
+mean degree 54.7 and a heavy tail led by the news-type hubs: UpliftingNews (227), Futurology (182), nottheonion (177),
+todayilearned (167), books (161) and worldnews (158). The most shared domains are imgur (27 subreddits), cnn.com and
+bbc.com (17 each), and youtube.com and nytimes.com (16). The graph is \emph{hub-and-spoke}: degree
+assortativity is $-0.77$, meaning high-degree subreddits link mostly to low-degree domains.
+(2) Edge weights are very skewed (median 2, maximum 893 posts, Fig.~\ref{fig:25}b). The five heaviest edges are videos$\rightarrow$youtube (893),
+DIY$\rightarrow$imgur (892), listentothis$\rightarrow$youtube (846), Documentaries$\rightarrow$youtube (816) and
+gifs$\rightarrow$imgur (545). Together they carry 22\,\% of the total weight of 18,245 posts.
+(3) Louvain finds six communities with high modularity ($Q=0.611$), and they are \emph{semantically coherent}
+(Table~\ref{tab:comm}). C0 contains the news and science-news subreddits and 391 news outlets (the Guardian, CNN, Business
+Insider, Wikipedia, BBC). C1 contains 21 image and GIF communities around imgur, gfycat and giphy. C2 contains the video and
+music subreddits around YouTube, Vimeo and SoundCloud. C3 contains movies and television around trade press (Variety,
+Hollywood Reporter, Deadline). C4 is r/science alone with 74 journal and science-press domains. C5 groups space, anime and
+long-form text communities around twitter.com, NASA and github.io.
+(4) The single giant component (diameter 6) holds because a few platforms (imgur, YouTube, Wikipedia, Twitter) are shared
+across topics. Without them the graph would split by topic. This shows the structural role of general-purpose hosts as
+bridges.
+
+\subsection{Five layouts on the same graph}
+We compare five layouts: Fruchterman--Reingold~\cite{fruchterman1991}; Kamada--Kawai~\cite{kamada1989} with edge length
+$1/w$; ForceAtlas2~\cite{jacomy2014} (NetworkX 3.7 implementation, scaling 2, gravity 1, distributed attraction, 600
+iterations); a spectral embedding from the normalised Laplacian~\cite{shi2000,ng2001}; and a circular layout grouped by
+community (Fig.~\ref{fig:26}). The force models are:
+\begin{align}
+\text{FR:}\ & F_a(d)=d^2/k,\quad F_r(d)=-k^2/d,\quad k=1.6/\sqrt{|V|};\\
+\text{KK:}\ & E=\textstyle\sum_{i<j}\tfrac{1}{2}k_{ij}(\lVert p_i-p_j\rVert-\ell\,d_{ij})^2,\ k_{ij}=d_{ij}^{-2};\\
+\text{FA2:}\ & F_a=w_{ij}\,d/\deg(i),\quad F_r=k_r\frac{(\deg i+1)(\deg j+1)}{d},
+\end{align}
+where $d_{ij}$ is the graph distance with weights $1/w$, and ``distributed attraction'' divides the attraction by the
+degree, pushing hubs outward. The spectral layout uses eigenvectors 2--3 of
+$L_{sym}=I-D^{-1/2}WD^{-1/2}$, rescaled by $D^{-1/2}$. Table~\ref{tab:layouts} and Fig.~\ref{fig:27} quantify each layout:
+runtime, exact count of crossing edge pairs, coefficient of variation of edge length, the silhouette of the 2-D positions
+grouped by community (a measure of visual cluster separation) and near-overlaps.
+
+\figfull{Fig_26_network_layouts.png}{The same 671-node graph with five layouts and identical encoding (size =
+$\sqrt{\text{strength}}$, colour = Louvain community, squares = subreddits, circles = domains, labels = eight strongest
+nodes). Runtime under each title.}{fig:26}
+\figfull{Fig_27_network_layout_metrics.png}{Quantitative layout comparison: (a) runtime (log scale); (b) edge crossings; (c)
+coefficient of variation of edge length; (d) silhouette of node positions by Louvain community. Grey = NetworkX's
+unnormalised spectral layout, not drawn in Fig.~\ref{fig:26}.}{fig:27}
+\input{generated/tab_layouts}
+
+\textbf{Inferences.}
+(1) \textbf{Fruchterman--Reingold} (4.7\,s) gives the most readable overview. The news community C0 forms a large blue cloud
+whose outlets surround worldnews and technology. Science (C4, purple) sticks out as its own lobe to the right, and the
+image, video and entertainment hubs (C1--C3) stack in a central column. It has the most uniform edge lengths (CV 0.51) and a
+positive silhouette (0.12).
+(2) \textbf{Kamada--Kawai} is the slowest by two orders of magnitude (526\,s, because it needs all-pairs shortest paths and
+$O(|V|^2)$ energy terms). It places the 628 domains on concentric rings by graph distance around a tight core of hubs. The
+rings are an artefact of the bipartite distance structure (every domain is at distance 1 or 3 from the core). The result
+has the most crossings among the force-based layouts (382,328) and a negative silhouette ($-0.15$), so community
+structure is lost.
+(3) \textbf{ForceAtlas2} (13.3\,s) with distributed attraction pushes the large subreddit hubs to the \emph{periphery}, each
+surrounded by its own exclusive domains (r/science at the top with its 74 science outlets, the news subreddits around the
+edge). Shared domains (imgur, YouTube) are pulled to the centre. This ``authorities in the middle, hubs outside'' picture is
+the most informative for asking which domains are shared. It has few crossings (226,342), but because shared domains mix in
+the centre its silhouette is near zero ($-0.02$).
+(4) \textbf{Spectral} (normalised) is the fastest real layout (0.08\,s) and separates communities best (silhouette 0.49,
+fewest crossings 220,414). It arranges the communities as \emph{arms}: video and music at the top, images and DIY to the
+right, news at the bottom left, and science at the bottom tip. The cost is 469 near-overlapping nodes along each arm, so
+individual domains cannot be read. NetworkX's \emph{unnormalised} spectral layout collapses: 666 near-overlaps, CV 12.1,
+silhouette $-0.11$. Its Fiedler vectors localise on a few weakly attached nodes, which is why the normalised Laplacian is
+required on hub-dominated graphs.
+(5) \textbf{Circular} grouped by community is instant and orders nodes perfectly (silhouette 0.19 by construction), but it
+has 4.3$\times$ more crossings (966,270) than the force layouts. Inter-community links become a dense hairball of chords,
+mostly from the news arc to imgur and YouTube.
+(6) Overall: FR for a first look, FA2 to study shared versus exclusive sources, spectral for community separation, and
+KK not at all at this size. No layout reduces crossings below about $2.2\times10^5$, which is inherent to a graph with
+hubs of degree over 200.
+
+\subsection{Node filtering}
+\figfull{Fig_28_network_filtering.png}{Filtering with ForceAtlas2. (a) Full graph (671 nodes, 2,350 edges); (b) after removing
+edges with weight $<2$ and then keeping the 2-core (269 nodes, 1,003 edges). Colours are the communities of the unfiltered
+graph, and 16 labels are shown on the filtered view.}{fig:28}
+
+\textbf{Inferences.}
+(1) The filter removes 60\,\% of nodes and 57\,\% of edges: one-off links (weight 1, 42.4\,\% of edges) and domains linked from a
+single community. The remaining backbone is readable enough for 16 labels without overlap.
+(2) Removing the spoke domains reveals the macro-structure (Fig.~\ref{fig:28}b). The news hubs (worldnews, news,
+nottheonion, technology, Futurology, UpliftingNews, todayilearned) share a dense core of outlets. A chain of image
+subreddits (gifs, DIY and others) hangs off imgur and gfycat. Video and music (videos, Documentaries, listentothis) attach
+through youtube.com, and television connects the entertainment trade press.
+(3) The filter also hides information. r/science's 74 specialised outlets mostly disappear because few of them are shared,
+which makes science look more peripheral than it is in Fig.~\ref{fig:26}. The threshold should always be reported.
+
+\subsection{Subreddit similarity projection}
+To compare communities directly we project the bipartite graph onto subreddits. Each subreddit is a vector of
+TF-IDF-weighted link counts, $x_{sd}=\log(1+w_{sd})\cdot\log(|S|/n_d)$, which down-weights ubiquitous hosts such as imgur.
+An edge is drawn where the cosine similarity is at least 0.15 (Fig.~\ref{fig:29}). The positions come from Kamada--Kawai
+on distance $1-\cos$, so closeness on the page means similar link profiles.
+
+\figfull{Fig_29_subreddit_projection.png}{One-mode projection: 43 subreddits, an edge where the TF-IDF cosine similarity of
+linked domains is at least 0.15 (266 edges, 5 Louvain communities). Colour = A1 topic category; node size = number of top
+posts linking externally.}{fig:29}
+
+\textbf{Inferences.}
+(1) Two large blocs emerge. One is an \emph{image-sharing} bloc at the top left: pics, aww, gifs, funny, memes,
+OldSchoolCool, interestingasfuck, creepy, Art, DIY, food and GetMotivated. The other is a \emph{news/link} bloc at the
+bottom right: news, worldnews, nottheonion, technology, Futurology, UpliftingNews and todayilearned, together with
+movies, television, books and Music, which link to the same news and trade outlets.
+(2) Topic labels and link behaviour disagree in instructive ways. gaming and sports (Entertainment) sit in the image bloc,
+because their top posts are images and clips. todayilearned (Knowledge) sits with the news bloc because it links
+Wikipedia and newspapers.
+(3) The video subreddits (videos, Documentaries, listentothis) form a bridge between the blocs through YouTube and Vimeo.
+science, askscience, InternetIsBeautiful and dataisbeautiful are peripheral, each with a distinctive set of sources.
+(4) Some similarities of 1.0 (memes, Jokes, WritingPrompts, mildlyinteresting) come from very sparse vectors: these
+communities link out only a few times, all to the same host. The projection should be read together with node size,
+which is small for them.
+
+\subsection{Interactive version and Gephi export}
+\figfull{Fig_30_network_interactive.png}{The interactive PyVis/vis-network page (\fpath{interactive/network.html}).
+Physics is ForceAtlas2-based. Interactions: hover tooltips (type, topic or hosting class, posts, partners, community),
+scroll zoom, pan, node drag, ``Select a Node'' to highlight a neighbourhood, and a filter by any node attribute (type,
+community, category), plus navigation buttons.}{fig:30}
+The page (Fig.~\ref{fig:30})~\cite{pyvis} supports all the interactions the assignment requires. With the filter, for
+example, \texttt{type = subreddit} isolates the 43 hubs, and \texttt{community = C4} shows r/science's exclusive outlets.
+The same graph and a filtered version are exported as GEXF with all node attributes. The README gives step-by-step
+instructions to reproduce the ForceAtlas2, Fruchterman--Reingold and Yifan Hu layouts in Gephi; Appendix~\ref{app:gephi}
+holds the slots for those screenshots.
+
+\subsection{Observations and limitations (I1)}
+The network shows that Reddit's largest communities fall into link ecosystems (news outlets, image hosts, video
+platforms, trade press, science press) that only partly match their topics. A few general-purpose platforms hold the whole
+graph together. Limitations: the network is built from \emph{top} posts only, so it describes what succeeds, not what is
+posted. The $\ge3$-post domain threshold removes the long tail of rare sources. Louvain is stochastic. Across seeds 0--9 it finds 6--8 communities with $Q=0.611$--$0.616$, and the adjusted
+Rand index against seed 0 is 0.77--0.95. The large blocs are stable; the small communities (C5) split or merge.

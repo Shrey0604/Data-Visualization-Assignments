@@ -1,0 +1,4 @@
+variable,p5,p95,p95_over_p5,roughness_8dates,share_at_max_value,segments_D2_5levels
+vpd,0.29,3.2,11.0345,0.1905,0.0,77432
+rmax,38.6,100.0,2.5907,0.2093,0.2129,118998
+srad,126.7,327.6,2.5856,0.1209,0.0,42426

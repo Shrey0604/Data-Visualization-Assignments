@@ -1,0 +1,4 @@
+strategy,seeds,land_coverage_pct,high_speed_coverage_pct,line_segments
+uniform grid seeds,112,98.86,92.63,18620
+random seeds (uniform on land),112,97.99,97.36,19090
+feature-based seeds (∝ speed⁴ + ring around vorticity max),112,77.15,97.76,9712

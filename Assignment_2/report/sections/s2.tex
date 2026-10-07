@@ -1,0 +1,207 @@
+% ============================================================================================
+\section{S2: Contour Mapping (Owner: Shrey Modi, BT2024125)}
+\label{sec:s2}
+\subsection{Choice of the scalar field}
+We contour the daily mean \textbf{vapour pressure deficit (VPD)}. VPD is the difference between saturation and actual vapour
+pressure, so it measures how strongly the air pulls water out of plants and fuels~\cite{novick2016,williams2019}. We screened
+the three candidates from Sec.~\ref{sec:intro} (Fig.~\ref{fig:10}, Table~\ref{tab:s2choice}).
+\begin{itemize}
+\item \textbf{rmax} saturates: 21.3\,\% of cell-days equal exactly 100\,\%. Its isolines at the upper deciles fragment into
+  118,998 segments along the edges of the plateau, which is noise rather than structure.
+\item \textbf{srad} is smooth (roughness 0.121), but its pattern is transient cloud cover with a narrow dynamic range
+  (p95/p5 = 2.6).
+\item \textbf{VPD} has the largest dynamic range (p95/p5 = 11.0), no plateau and a strong, physically meaningful
+  west--east gradient. It also has literature thresholds for plant stress, and it ties S1 (temperature) to moisture.
+\end{itemize}
+
+\figfull{Fig_10_s2_variable_candidates.png}{Screening of candidate contour variables on D2. Colour = field (1st--99th
+percentile stretch); black lines = our Marching Squares at the 10/30/50/70/90th percentile of the day (also marked on the
+colour bars).}{fig:10}
+\input{generated/tab_s2_choice}
+
+\subsection{Marching Squares implementation}
+\fpath{scivis/s2_contours/marching_squares.py} implements the algorithm from scratch in NumPy, the 2-D analogue of marching
+cubes~\cite{lorensen1987}. It is fully vectorised over all $584\times1385$ cells per isovalue (Algorithm~\ref{alg:ms}).
+\begin{itemize}
+\item \textbf{Case index.} Corners are bottom-left $z_{bl}=Z_{i,j}$, bottom-right $z_{br}=Z_{i,j+1}$, top-right
+  $z_{tr}=Z_{i+1,j+1}$ and top-left $z_{tl}=Z_{i+1,j}$. A corner is ``inside'' if $z\ge c$, and the cell's case is
+  $\kappa=1[z_{bl}{\ge}c]+2[z_{br}{\ge}c]+4[z_{tr}{\ge}c]+8[z_{tl}{\ge}c]\in\{0..15\}$ (Fig.~\ref{fig:11}).
+\item \textbf{Lookup table.} Cases 0 and 15 produce nothing. Each remaining unambiguous case pairs two of the edges
+  B, R, T, L, and complementary cases share their segment (e.g.\ 1 and 14 both give L--B).
+\item \textbf{Interpolation.} On an edge from $(x_a,z_a)$ to $(x_b,z_b)$ the crossing lies at
+  \begin{equation}
+  x^\ast = x_a + t\,(x_b-x_a),\qquad t=\frac{c-z_a}{z_b-z_a}\in[0,1].
+  \end{equation}
+\item \textbf{Saddles (cases 5 and 10).} The two inside corners lie on a diagonal, and the four crossings can be paired
+  in two topologically different ways. We resolve this with the \emph{asymptotic decider}~\cite{nielson1991}. Inside the
+  cell the bilinear interpolant has a saddle value
+  \begin{equation}
+  s=\frac{z_{bl}z_{tr}-z_{br}z_{tl}}{z_{bl}+z_{tr}-z_{br}-z_{tl}},
+  \label{eq:asym}
+  \end{equation}
+  and if $s\ge c$ the inside corners are \emph{joined} through the cell; otherwise they are separated. For comparison we also
+  implemented the cell-centre mean decider, $\bar z\ge c$, and the fixed rules ``always join'' and ``always separate''.
+  The fixed rules are what \texttt{skimage} calls \texttt{fully\_connected='high'} and \texttt{'low'}.
+\item \textbf{NaN handling.} A cell with any NaN corner is skipped, so isolines stop at the coastline and the mask edge
+  and never cross the ocean.
+\end{itemize}
+
+\begin{algorithm}[!t]
+\caption{Vectorised Marching Squares with asymptotic decider}
+\label{alg:ms}
+\begin{algorithmic}[1]
+\REQUIRE grid $Z\in\mathbb{R}^{n_y\times n_x}$ (NaN = no data), coordinates $x,y$, isovalue $c$
+\ENSURE set of segments $\mathcal{S}$
+\STATE $Z_{bl},Z_{br},Z_{tr},Z_{tl}\leftarrow$ the four shifted views of $Z$ \COMMENT{shape $(n_y{-}1)\times(n_x{-}1)$}
+\STATE $V\leftarrow$ all four corners finite
+\STATE $\kappa\leftarrow [Z_{bl}{\ge}c] + 2[Z_{br}{\ge}c] + 4[Z_{tr}{\ge}c] + 8[Z_{tl}{\ge}c]$
+\STATE $P_e\leftarrow$ interpolated crossing on each edge $e\in\{B,R,T,L\}$ of every cell
+\FORALL{unambiguous case $k$ with segment list $\mathrm{LUT}[k]$}
+  \FORALL{$(e_1,e_2)\in\mathrm{LUT}[k]$}
+    \STATE $\mathcal{S}\leftarrow\mathcal{S}\cup\{(P_{e_1}[q],P_{e_2}[q]) : \kappa[q]=k \wedge V[q]\}$
+  \ENDFOR
+\ENDFOR
+\FORALL{saddle case $k\in\{5,10\}$}
+  \STATE $s\leftarrow$ Eq.~\eqref{eq:asym} on cells with $\kappa=k \wedge V$
+  \STATE add $\mathrm{JOIN}[k]$ segments where $s\ge c$ and $\mathrm{SEP}[k]$ segments elsewhere
+\ENDFOR
+\RETURN $\mathcal{S}$
+\end{algorithmic}
+\end{algorithm}
+
+\figfullw{Fig_11_marching_squares_cases.png}{The 16-case lookup table. Orange corners are $\ge$ the isovalue. Green
+segments join edge crossings (drawn at edge midpoints for clarity; the code interpolates linearly). For the ambiguous
+saddles 5 and 10 the dashed purple pair shows the alternative resolution.}{fig:11}{0.62}
+
+\subsection{Validation against reference implementations}
+We compared the output with \texttt{skimage.measure.find\_contours}~\cite{vanderwalt2014} (polylines converted to segments)
+and with \texttt{contourpy} on the full D2 VPD field, at three isovalues offset by half the 0.01\,kPa storage step so that
+no data value equals the isovalue exactly (Fig.~\ref{fig:12}, Table~\ref{tab:msval}).
+
+\figfull{Fig_12_ms_validation.png}{Validation on D2. (a) Our isolines (thick, coloured) under \texttt{skimage}'s (thin
+black) at 1.005, 2.005 and 3.005\,kPa; they coincide everywhere. (b, c) A $9\times9$-cell window in Nebraska containing
+saddle cells (red dashed squares) at 2.005\,kPa: (b) the fixed ``join'' rule used by \texttt{skimage}; (c) our asymptotic
+decider.}{fig:12}
+
+\input{generated/tab_msval}
+
+\textbf{Inferences.}
+(1) With the same saddle rule our implementation is \emph{identical} to \texttt{skimage}. All 17,993 / 21,715 / 11,877
+segments match exactly at the three levels (100\,\%), with a maximum vertex distance of 0.000 cells, so the lookup table,
+the interpolation and the NaN handling are correct.
+(2) Saddles are rare but not negligible: 451, 386 and 179 cells, i.e.\ 2.5, 1.8 and 1.5\,\% of the cells crossed by each
+isoline. The asymptotic decider joins 195, 177 and 84 of them (43--47\,\%); the centre-mean decider joins 186, 181 and 81. The
+two deciders disagree on only a few saddles, because the cell mean is a reasonable estimate of the bilinear saddle value
+when the field is smooth at 4\,km.
+(3) The saddle choice changes topology, not geometry. Our asymptotic result differs from \texttt{skimage}'s fixed rule in
+836--1,024 segments, yet total isoline length differs by only 1.0--1.5\,\%, and contourpy's length lies between the two.
+In Fig.~\ref{fig:12}b the fixed rule draws small diamond-shaped closed loops around single cells. The asymptotic decider
+(Fig.~\ref{fig:12}c) instead links them into continuous bands that follow the bilinear interpolant. Both are valid
+contours of a piecewise-bilinear field, but only the decider is consistent with that interpolant.
+(4) Speed: our NumPy version needs 0.08--0.13\,s per level on 810,810 cells, against 0.02--0.05\,s for the Cython
+\texttt{skimage}. A 3$\times$ slowdown is acceptable for a pure-Python implementation.
+
+\subsection{Isolines vs.\ filled contours}
+The assignment allows Marching Squares and/or contour filling. We use both, and Fig.~\ref{fig:13} shows why. Our isolines
+are drawn with Matplotlib \texttt{LineCollection}. Filled bands use \texttt{contourf}, computed on the projected grid
+coordinates. Contouring in longitude/latitude and re-projecting made Cartopy invert some polygons with holes, filling the
+whole map, so we avoid that path.
+
+\figfull{Fig_13_isolines_vs_filled.png}{VPD on D1 (8~Jul) with ten levels (0.5--5\,kPa). (a) Isolines only (own Marching
+Squares, coloured by level); (b) filled bands only (\texttt{contourf}); (c) filled bands plus isolines plus labels at 1--4\,kPa
+(own label placement on the longest joined polylines).}{fig:13}
+
+\textbf{Inferences and rationale.}
+(1) Isolines encode \emph{gradient}: their spacing is inversely proportional to $|\nabla\mathrm{VPD}|$. In
+Fig.~\ref{fig:13}a they pack tightly along the Sierra Nevada and Central Valley margin, the Mogollon Rim and the Wasatch,
+where VPD changes by more than 3\,kPa over a few grid cells (topographic control: hot, dry valleys next to cooler
+ridges). Isolines also leave the underlying field visible and suit overlays (Fig.~\ref{fig:16}). However, ten coloured
+lines are hard to read as values, and in the humid East the 0.5 and 1.0\,kPa lines form a dense tangle of small closed
+loops.
+(2) Filled bands encode \emph{magnitude} and \emph{area}. Fig.~\ref{fig:13}b shows at once that the Mojave and Sonoran
+deserts and the Central Valley exceed 5\,kPa, while almost everything east of about 97\,$^\circ$W is below 1--1.5\,kPa (the Gulf
+moisture of D1, the day Beryl came ashore). The shading hides gradient steepness and makes noisy regions look blotchy.
+(3) Combining them (Fig.~\ref{fig:13}c) gives magnitude from colour and gradient and exact values from labelled lines, so
+this is our default. The rule we follow: use isolines when the task is locating thresholds or gradients, or overlaying a
+second field; use filled contours when the task is reading magnitudes or comparing areas.
+
+\subsection{Number and placement of contour levels}
+Fig.~\ref{fig:14} and Table~\ref{tab:levels} compare uniform levels (every 0.5\,kPa), quantile levels (deciles of the day)
+and domain thresholds (0.5/1/2/3/4\,kPa, which bracket common plant-stress and fire-weather categories).
+
+
+\figfull{Fig_14_contour_levels.png}{Level placement on D2. (a--c) Filled contours plus our isolines for the three
+schemes; (d--f) land-cell histogram with the levels (vertical lines) and the min/max share of land per band.}{fig:14}
+\input{generated/tab_s2_levels}
+
+\textbf{Inferences.}
+(1) The VPD histogram on D2 is \emph{bimodal}, with peaks at about 0.9\,kPa (humid East) and about 2.2\,kPa (dry West and Plains)
+(Fig.~\ref{fig:14}d). Uniform levels therefore put only two levels in the first mode but six in the sparse tail
+above 2.5\,kPa. Band shares range from 0.7 to 26.4\,\%.
+(2) Quantile levels give every band 9.6--10.2\,\% of land, but five of the nine levels fall between 0.53 and 1.37\,kPa. The
+East breaks into many small contours (147,675 segments, the most). Meanwhile everything above 3.16\,kPa (the Great
+Basin, the desert Southwest and the Montana heat dome) collapses into one dark class.
+(3) Domain thresholds need the fewest segments (69,862) and give named categories. The 2\,kPa line cleanly separates the
+semi-arid West and the northern-Plains heat dome from the humid East. The $\ge$4\,kPa band covers 3.5\,\% of land, exactly
+the hot deserts. This is the most interpretable choice, and we use 1/2/3/4\,kPa for the time series (Fig.~\ref{fig:17}).
+
+\subsection{Smoothing before contouring}
+We apply a \emph{mask-aware} Gaussian filter, $\tilde f=G_\sigma*(f\,m)\,/\,G_\sigma*m$ with $m$ the land mask, so that ocean
+NaNs do not bleed into the coast. Then we contour at 2 and 3\,kPa (Fig.~\ref{fig:15}, Table~\ref{tab:smooth}).
+
+\figfull{Fig_15_contour_smoothing.png}{Effect of Gaussian pre-smoothing ($\sigma$ = 0, 1, 3, 6 cells $\approx$ 0, 4, 12,
+24\,km) on the 2\,kPa (blue) and 3\,kPa (red) isolines on D2. Top: CONUS (box = zoom); bottom: Utah/Colorado
+zoom.}{fig:15}
+\input{generated/tab_s2_smooth}
+
+\textbf{Inferences.}
+(1) Unsmoothed isolines (33,599 segments) follow every ridge and valley. In the Utah/Colorado zoom they form 311 separate
+polylines with about 17,700\,km of total length, most of them small closed loops around individual peaks and basins.
+This is real terrain-driven VPD, but it is visual noise at CONUS scale.
+(2) $\sigma=1$ cell already cuts the zoom to 58 polylines. $\sigma=3$ (12\,km) keeps the main structure, the dry Colorado
+Plateau and Uinta Basin against the moist Colorado Rockies, with 13 lines and 42\,\% of the original length. This is the
+best compromise.
+(3) $\sigma=6$ (24\,km) leaves 9 lines. Separate dry basins merge, and the 3\,kPa line shifts into the mountains,
+misplacing the threshold by tens of kilometres. Smoothing trades positional accuracy for legibility, so the smoothing
+scale should be stated whenever smoothed contours are used for decisions.
+
+\subsection{Overlay of contours on colour-mapped fields}
+\figfull{Fig_16_contour_overlay.png}{Contours overlaid on colour maps for D1. (a) Labelled VPD isolines (1--4\,kPa) over the
+VPD field; (b) the same isolines (coloured by level) over the $\Tmax$ field from S1, giving a bivariate map.}{fig:16}
+
+\textbf{Inferences.}
+(1) In Fig.~\ref{fig:16}a the 4\,kPa contour encloses the Mojave and Sonoran deserts and the southern Central Valley. The
+1\,kPa contour meanders along about 100\,$^\circ$W and then follows the Appalachians.
+(2) The bivariate overlay (Fig.~\ref{fig:16}b) shows that VPD tracks temperature in the West: the $\ge$3--4\,kPa areas sit
+exactly on the $\ge$40\,\degC{} areas of California, Nevada and Arizona, as expected because saturation vapour pressure grows
+exponentially with temperature. In the East it does not. Texas, Arkansas and the Southeast reach 33--38\,\degC{} on D1, yet
+VPD stays below 1--2\,kPa because Beryl's tropical air mass is nearly saturated. ``Hot'' and ``dry'' are therefore
+different stresses, and only the overlay shows where they diverge.
+
+\subsection{Contour evolution over the eight dates}
+Fig.~\ref{fig:17} uses \emph{fixed} levels (1/2/3/4\,kPa) on every date, which is required for frames to be
+comparable.\footnote{Animation: \fpath{images/Fig_17_vpd_contour_evolution.gif} (8 frames, 1 frame/s).}
+Table~\ref{tab:evol} gives the area above each level.
+
+\figfull{Fig_17_vpd_contour_evolution.png}{VPD contours on the eight dates with fixed levels (1/2/3/4\,kPa): our isolines
+plus filled bands. All eight frames of the GIF \fpath{Fig_17_vpd_contour_evolution.gif}.}{fig:17}
+\input{generated/tab_s2_evol}
+
+\textbf{Inferences.}
+(1) The share of land with VPD $\ge$2\,kPa peaks on D2 (34.2\,\%), when the northern-Plains heat dome (Montana, Wyoming,
+the Dakotas) reaches $\ge$3--4\,kPa, and declines to 16.3\,\% on D7. The extreme $\ge$4\,kPa class shrinks from 4.6\,\% (D1)
+to 1.1--2.0\,\% in Aug--Sep.
+(2) The $\ge$1\,kPa share barely moves (63.5--72.6\,\%). The arid West is persistently dry, and the season mainly changes
+how \emph{intense} the dryness is, not \emph{where} it is.
+(3) Tropical systems leave a clear moist footprint. On D3 the Southeast coast falls below 1\,kPa under Debby, and on D7 and D8
+the whole Southeast and Appalachians do so under Helene. On D4 and D5 a dry tongue of 2--3\,kPa pushes east from Texas into
+Oklahoma and Arkansas, a late-summer dry spell between the storms.
+(4) The isoline segment count falls from 57,087 (D2) to 36,559 (D7). The September fields are smoother, with fewer
+convective moisture patches.
+
+\subsection{Observations and limitations (S2)}
+Our Marching Squares reproduces the reference exactly and adds a principled saddle decider. Filled and line contours
+answer different questions, so we combine them. Level placement should follow the data distribution \emph{and} the
+domain, and smoothing must be reported because it moves thresholds. Limitations: VPD is a daily mean, so afternoon peaks are
+higher than shown. Segments are drawn unjoined in the maps; we join them only for labelling and counting. Contouring on the
+geographic grid ignores the slight cell-area change with latitude.

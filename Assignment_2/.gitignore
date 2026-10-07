@@ -1,0 +1,20 @@
+data/raw/
+__pycache__/
+*.pyc
+.venv/
+report/*.aux
+report/*.log
+report/*.out
+report/*.bbl
+report/*.blg
+report/*.fls
+report/*.fdb_latexmk
+report/*.synctex.gz
+
+# too large for GitHub (>100 MB) or regenerable
+data/processed/*.nc
+data/processed/i1_layout_cache.json
+report/main.pdf
+report/DAS732_A2_Report.pdf
+report/build.log
+report/generated/

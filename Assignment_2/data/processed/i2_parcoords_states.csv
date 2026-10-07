@@ -1,0 +1,9 @@
+state,selected,sel_C2,sel_C0,sel_C1,sel_C3,sel_Entertainment and media,sel_Creative and lifestyle,sel_Q&A and advice,sel_Photos and curiosities,sel_Knowledge and curiosity,sel_Memes and GIFs,"sel_News, science and tech",sel_Text humour and stories,sel_text,sel_link,sel_image,sel_video
+"unbundled, k-means colour",2000,553.0,552.0,675.0,220.0,,,,,,,,,,,,
+"bundled beta=0.85, k-means",2000,553.0,552.0,675.0,220.0,,,,,,,,,,,,
+"bundled beta=0.85, topic + centroid lines",2000,,,,,400.0,200.0,320.0,280.0,160.0,160.0,320.0,160.0,,,,
+brush score >= 60k (post type colour),654,,,,,,,,,,,,,79.0,276.0,262.0,37.0
+brush score >= 60k AND text,79,,,,,,,,,,,,,79.0,,,
+brush comments >= 3000,303,,,,,54.0,,81.0,29.0,12.0,11.0,107.0,9.0,,,,
+brush comments >= 3000 AND ratio <= 0.85,117,,,,,26.0,,39.0,8.0,3.0,3.0,36.0,2.0,,,,
+reordered + beta 0.5 + brush year >= 2021,524,,,,,,,,,,,,,116.0,195.0,177.0,36.0

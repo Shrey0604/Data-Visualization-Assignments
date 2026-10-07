@@ -1,0 +1,7 @@
+,runtime_s,edge_crossings,mean_edge_length,cv_edge_length,silhouette_by_community,node_pairs_closer_than_0.005
+Fruchterman-Reingold (spring),4.6622,226596.0,0.244,0.5074,0.1199,4.0
+Kamada-Kawai,525.6556,382328.0,0.2021,0.9041,-0.1492,38.0
+ForceAtlas2 (distributed attraction),13.326,226342.0,0.5628,0.6228,-0.0181,69.0
+Spectral (normalised Laplacian),0.0829,220414.0,0.1541,1.1477,0.4945,469.0
+Circular (grouped by community),0.0023,966270.0,1.0748,0.6371,0.1936,0.0
+"Spectral (unnormalised, nx)",0.1425,245294.0,0.0023,12.0597,-0.1095,666.0

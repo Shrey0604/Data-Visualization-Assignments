@@ -1,0 +1,14 @@
+,value
+monthly_band_h,55.08653846153846
+monthly_peak_month,"{'Creative and lifestyle': '2019-01', 'Entertainment and media': '2018-03', 'Knowledge and curiosity': '2020-08', 'Memes and GIFs': '2020-08', 'News, science and tech': '2021-01', 'Photos and curiosities': '2020-07', 'Q&A and advice': '2020-09', 'Text humour and stories': '2020-08'}"
+monthly_peak_value,"{'Creative and lifestyle': 113, 'Entertainment and media': 185, 'Knowledge and curiosity': 100, 'Memes and GIFs': 128, 'News, science and tech': 224, 'Photos and curiosities': 187, 'Q&A and advice': 238, 'Text humour and stories': 131}"
+monthly_mean,"{'Creative and lifestyle': 45.96, 'Entertainment and media': 93.48, 'Knowledge and curiosity': 35.72, 'Memes and GIFs': 37.97, 'News, science and tech': 75.85, 'Photos and curiosities': 66.16, 'Q&A and advice': 72.74, 'Text humour and stories': 37.9}"
+line_vs_horizon,"{'row_height_share': 0.125, 'small_multiple_scale_posts': np.int64(238), 'horizon_band_posts': np.float64(55.08653846153846), 'virtual_resolution_gain': np.float64(4.320474777448071)}"
+quarter_band_h,150.2857142857143
+year_band_h,469.030303030303
+subreddit_band_h,0.15
+subreddits_peak_year,"{2016: 3, 2017: 14, 2018: 6, 2019: 2, 2020: 8, 2021: 4, 2022: 8, 2023: 3, 2024: 2}"
+by_subreddit_median_log10,"{'memes': 5.132, 'pics': 5.098, 'funny': 5.056, 'aww': 5.047, 'interestingasfuck': 5.017, 'gaming': 4.993, 'gifs': 4.98, 'worldnews': 4.93, 'wholesomememes': 4.928, 'todayilearned': 4.922, 'mildlyinteresting': 4.911, 'news': 4.907, 'Showerthoughts': 4.831, 'AskReddit': 4.821, 'science': 4.727, 'movies': 4.709, 'videos': 4.695, 'OldSchoolCool': 4.695, 'technology': 4.682, 'LifeProTips': 4.678, 'nottheonion': 4.659, 'space': 4.641, 'sports': 4.598, 'Jokes': 4.576, 'EarthPorn': 4.565, 'dataisbeautiful': 4.559, 'UpliftingNews': 4.551, 'tifu': 4.547, 'Art': 4.505, 'Futurology': 4.504, 'GetMotivated': 4.481, 'television': 4.435, 'food': 4.407, 'Music': 4.329, 'IAmA': 4.262, 'NoStupidQuestions': 4.261, 'books': 4.178, 'creepy': 4.178, 'explainlikeimfive': 4.132, 'anime': 4.122, 'relationship_advice': 4.108, 'WritingPrompts': 4.059, 'DIY': 4.017, 'askscience': 3.931, 'Documentaries': 3.922, 'personalfinance': 3.868, 'travel': 3.853, 'history': 3.75, 'InternetIsBeautiful': 3.705, 'listentothis': 3.235}"
+by_year_median_log10,"{2011: 3.086, 2012: 4.228, 2013: 3.475, 2014: 4.122, 2015: 4.069, 2016: 4.154, 2017: 4.506, 2018: 4.572, 2019: 4.61, 2020: 4.676, 2021: 4.672, 2022: 4.652, 2023: 4.541, 2024: 4.233}"
+by_year_n,"{2011: 1, 2012: 2, 2013: 5, 2014: 168, 2015: 602, 2016: 1747, 2017: 6266, 2018: 8096, 2019: 8465, 2020: 11493, 2021: 6279, 2022: 3930, 2023: 1589, 2024: 623}"
+by_topic_median_comments,"{'Creative and lifestyle': 373.0, 'Entertainment and media': 1201.0, 'Knowledge and curiosity': 926.0, 'Memes and GIFs': 1136.0, 'News, science and tech': 2145.0, 'Photos and curiosities': 1105.0, 'Q&A and advice': 1263.0, 'Text humour and stories': 812.0}"

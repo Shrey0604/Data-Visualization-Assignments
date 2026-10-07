@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>I2a Parallel Coordinates - Reddit top posts</title>
+  <link rel="stylesheet" href="../style.css">
+  <script src="../lib/d3.v7.min.js"></script>
+</head>
+<body>
+<header>
+  <h1>I2a - Parallel coordinates with edge bundling: 2,000 all-time top Reddit posts (40 per subreddit, 50 subreddits)</h1>
+  <p>Owner: Parthsarati Samanta (BT2024083). Brush on any axis (several at once) to filter; drag an axis title to
+    reorder; the slider moves every line towards its group's centroid between axes (0 = plain polylines,
+    1 = fully bundled); hover a line for the post.</p>
+</header>
+<div class="controls">
+  <label>Colour &amp; bundle by
+    <select id="group">
+      <option value="cluster">k-means cluster (k = 4)</option>
+      <option value="category">Topic category (8)</option>
+      <option value="post_type">Post type (4)</option>
+    </select>
+  </label>
+  <label>Bundling strength β
+    <input id="beta" type="range" min="0" max="1" step="0.05" value="0">
+    <span id="betaVal" class="stat">0.00</span>
+  </label>
+  <label><input id="showSpine" type="checkbox"> show group centroid lines</label>
+  <button id="reset">Reset</button>
+  <span>Selected: <span id="count" class="stat">2000</span> / <span id="total">2000</span> posts</span>
+  <span id="brushInfo" style="color:#5b6470"></span>
+</div>
+<div id="chart"></div>
+<div class="note">Scales: score is logarithmic; comments and crossposts use a symmetric log (they contain zeros);
+  post type is an ordinal (point) axis; the others are linear. Bundling control points sit at 25 % and 75 % of each
+  gap, at (1-β)·(straight-line position) + β·(group centroid line); the path is a monotone cubic through them.</div>
+<div class="tooltip" id="tip"></div>
+<script src="parcoords.js"></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>I2b Zoomable Treemap - Reddit top posts</title>
+  <link rel="stylesheet" href="../style.css">
+  <script src="../lib/d3.v7.min.js"></script>
+  <style>
+    #crumbs { padding: 6px 18px; font-size: 13.5px; }
+    #crumbs span.crumb { color: #0b6e99; cursor: pointer; text-decoration: underline; }
+    #crumbs span.here { font-weight: 700; }
+    #metrics { padding: 4px 18px 8px; font-size: 12.5px; color: #3a434d; }
+    .node text { pointer-events: none; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>I2b - Zoomable treemap: 49,266 all-time top posts of 50 subreddits, three hierarchy remodels</h1>
+  <p>Owner: Parthsarati Samanta (BT2024083). Click a rectangle to zoom in, click a breadcrumb (or the grey header bar)
+    to zoom out. Thin inner outlines show the next level. Hover for value and share.</p>
+</header>
+<div class="controls">
+  <label>Hierarchy
+    <select id="hier">
+      <option value="h1_topic">H1: topic → subreddit → post type</option>
+      <option value="h2_media">H2: post type → hosting → topic → subreddit</option>
+      <option value="h3_time">H3: era → year → topic → subreddit</option>
+    </select>
+  </label>
+  <label>Size =
+    <select id="measure">
+      <option value="posts">number of top posts</option>
+      <option value="score">total score (upvotes)</option>
+      <option value="comments">total comments</option>
+    </select>
+  </label>
+  <label>Tiling
+    <select id="tiling">
+      <option value="squarify">squarify (golden ratio)</option>
+      <option value="binary">binary</option>
+      <option value="slice">slice (horizontal strips)</option>
+      <option value="dice">dice (vertical strips)</option>
+      <option value="sliceDice">slice-dice (alternating)</option>
+    </select>
+  </label>
+  <label>Sort children
+    <select id="sort">
+      <option value="value">by size (descending)</option>
+      <option value="name">by name (alphabetical / chronological)</option>
+    </select>
+  </label>
+</div>
+<div id="crumbs"></div>
+<div id="metrics"></div>
+<div id="chart"></div>
+<div class="tooltip" id="tip"></div>
+<script src="treemap.js"></script>
+</body>
+</html>
